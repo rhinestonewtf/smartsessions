@@ -57,10 +57,8 @@ struct Session {
     ISessionValidator sessionValidator;
     bytes sessionValidatorInitData;
     bytes32 salt;
-    PolicyData[] userOpPolicies;
-    ERC7739Data erc7739Policies;
+    PolicyData[] erc1271Policies;
     ActionData[] actions;
-    bool permitERC4337Paymaster;
 }
 
 struct MultiChainSession {

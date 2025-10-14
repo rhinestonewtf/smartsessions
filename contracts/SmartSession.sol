@@ -1,28 +1,33 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity ^0.8.25;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.28;
 
-import "./DataTypes.sol";
+// Contracts
+import { SmartSessionBase } from "@core/SmartSessionBase.sol";
 
-import { IERC7579Account } from "erc7579/interfaces/IERC7579Account.sol";
-import { IAccountExecute } from "modulekit/external/ERC4337.sol";
-import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
-import { EIP1271_MAGIC_VALUE, IERC1271 } from "module-bases/interfaces/IERC1271.sol";
-import { ExecType, CallType, CALLTYPE_BATCH, CALLTYPE_SINGLE, EXECTYPE_DEFAULT } from "erc7579/lib/ModeLib.sol";
+// Libraries
+import { IdLib } from "@lib/IdLib.sol";
+import { EnumerableSet } from "@smartsessions/utils/EnumerableSet4337.sol";
+import { ExecutionLib } from "@smartsessions/lib/ExecutionLib.sol";
+import { PolicyLib } from "@lib/PolicyLib.sol";
+import { SignerLib } from "@smartsessions/lib/SignerLib.sol";
+import { ConfigLib } from "@lib/ConfigLib.sol";
+import { IdLib as CompactIdLib } from "@the-compact/lib/IdLib.sol";
+import { HashLib } from "@lib/HashLib.sol";
+import { SignatureCheckerLib } from "@solady/utils/SignatureCheckerLib.sol";
+import { SignatureLib } from "@lib/SignatureLib.sol";
+import { EncodeLib } from "@lib/EncodeLib.sol";
+import { DigestCacheLib } from "@lib/DigestCacheLib.sol";
 
-import { ISmartSession } from "./ISmartSession.sol";
-import { SmartSessionBase } from "./core/SmartSessionBase.sol";
-import { SmartSessionERC7739 } from "./core/SmartSessionERC7739.sol";
-import { EnumerableSet } from "./utils/EnumerableSet4337.sol";
-import { ExecutionLib as ExecutionLib } from "./lib/ExecutionLib.sol";
-import { IUserOpPolicy, IActionPolicy } from "./interfaces/IPolicy.sol";
-import { PolicyLib } from "./lib/PolicyLib.sol";
-import { SignerLib } from "./lib/SignerLib.sol";
-import { ConfigLib } from "./lib/ConfigLib.sol";
-import { EncodeLib } from "./lib/EncodeLib.sol";
-import { HashLib } from "./lib/HashLib.sol";
-import { ValidationDataLib } from "./lib/ValidationDataLib.sol";
-import { IdLib } from "./lib/IdLib.sol";
-import { SmartSessionModeLib } from "./lib/SmartSessionModeLib.sol";
+// Types
+import { PermissionId, PolicyType } from "@smartsessions/DataTypes.sol";
+import {
+    DisableSession,
+    INVALID_RETURN,
+    SmartSessionEmissaryConfig,
+    SmartSessionEmissaryEnable,
+    SmartSessionEmissaryDisable
+} from "@types/DataTypes.sol";
+import { Execution } from "@smartsessions/lib/ExecutionLib.sol";
 
 /**
  * @title SmartSession
@@ -40,147 +45,166 @@ import { SmartSessionModeLib } from "./lib/SmartSessionModeLib.sol";
  * account access in the evolving landscape of account abstraction.
  */
 contract SmartSession is ISmartSession, SmartSessionBase, SmartSessionERC7739 {
-    using EnumerableSet for EnumerableSet.Bytes32Set;
-    using EnumerableMap for EnumerableMap.Bytes32ToBytes32Map;
-    using SmartSessionModeLib for SmartSessionMode;
+    /* //////////////////////////////////////////////////////////////
+                               LIBRARIES
+    //////////////////////////////////////////////////////////////*/
+
+    using EncodeLib for *;
     using IdLib for *;
-    using ValidationDataLib for ValidationData;
-    using HashLib for *;
+    using IdLib for *;
+    using EnumerableSet for *;
+    using ExecutionLib for *;
+    using PolicyLib for *;
     using PolicyLib for *;
     using SignerLib for *;
+    using HashLib for *;
+    using HashLib for *;
     using ConfigLib for *;
-    using ExecutionLib for *;
-    using EncodeLib for *;
+    using CompactIdLib for *;
+    using SignatureCheckerLib for *;
+    using SignatureLib for *;
+    using DigestCacheLib for *;
 
-    /**
-     * @notice Validates a user operation for ERC4337/ERC7579 compatibility
-     * @dev This function is the entry point for validating user operations in SmartSession
-     * @dev This function will dissect the userop.signature field, and parse out the provided PermissionId, which
-     * identifies a
-     * unique ID of a dapp for a specific user. n Policies and one Signer contract are mapped to this Id and will be
-     * checked. Only UserOps that pass policies and signer checks, are considered valid.
-     * Enable Flow:
-     *     SmartSessions allows session keys to be created within the "first" UserOp. If the enable flow is chosen, the
-     *     EnableSession data, which is packed in userOp.signature is parsed, and stored in the SmartSession storage.
-     * @param userOp The user operation to validate
-     * @param userOpHash The hash of the user operation
-     * @return vd ValidationData containing the validation result
-     */
-    function validateUserOp(PackedUserOperation calldata userOp, bytes32 userOpHash)
-        external
-        override
-        returns (ValidationData vd)
+    /* //////////////////////////////////////////////////////////////
+                                CONFIG
+    //////////////////////////////////////////////////////////////*/
+
+    /// @notice Sets the Smart Session Emissary configuration for a specific account
+    /// @param account The address of the account for which the configuration is being set
+    /// @param config The Smart Session Emissary configuration
+    /// @param enableData The Emissary enable data
+    function setConfig(
+        address account,
+        SmartSessionEmissaryConfig calldata config,
+        SmartSessionEmissaryEnable calldata enableData
+    )
+        public
     {
-        // ensure that userOp.sender == msg.sender == account
-        // SmartSession will sstore configs for a certain account,
-        // so we have to ensure that unauthorized access is not possible
-        address account = userOp.getSender();
-        if (account != msg.sender) revert InvalidUserOpSender(account);
+        // Derive lockTag from allocator, scope, resetPeriod
+        bytes12 lockTag = config.allocator.toAllocatorId().toLockTag(config.scope, config.resetPeriod);
 
-        // unpacking data packed in userOp.signature
-        (SmartSessionMode mode, PermissionId permissionId, bytes calldata packedSig) = userOp.signature.unpackMode();
+        // Verify data expires after current block timestamp
+        require(enableData.expires > block.timestamp, InvalidEmissaryEnableData());
 
-        // If the SmartSession.USE mode was selected, no further policies have to be enabled.
-        // We can go straight to userOp validation
-        // This condition is the average case, so should be handled as the first condition
-        if (mode.isUseMode()) {
-            // USE mode: Directly enforce policies without enabling new ones
-            vd = _enforcePolicies({
-                permissionId: permissionId,
-                userOpHash: userOpHash,
-                userOp: userOp,
-                decompressedSignature: packedSig,
-                account: account
-            });
-        }
-        // If the SmartSession.ENABLE mode was selected, the userOp.signature will contain the EnableSession data
-        // This data will be used to enable policies and signer for the session
-        // The signature of the user on the EnableSession data will be checked
-        // If the signature is valid, the policies and signer will be enabled
-        // after enabling the session, the policies will be enforced on the userOp similarly to the SmartSession.USE
-        else if (mode.isEnableMode()) {
-            // unpack the EnableSession data and signature
-            // calculate the permissionId from the Session data
-            EnableSession memory enableData;
-            bytes memory usePermissionSig;
-            (enableData, usePermissionSig) = packedSig.decodeEnable();
-            permissionId = enableData.sessionToEnable.toPermissionIdMemory();
+        // Enable policies
+        _enablePolicies(account, enableData, config, lockTag);
 
-            // ENABLE mode: Enable new policies and then enforce them
-            _enablePolicies({ enableData: enableData, permissionId: permissionId, account: account, mode: mode });
-
-            vd = _enforcePolicies({
-                permissionId: permissionId,
-                userOpHash: userOpHash,
-                userOp: userOp,
-                decompressedSignature: usePermissionSig,
-                account: account
-            });
-        }
-        // if an Unknown mode is provided, the function will revert
-        else {
-            revert UnsupportedSmartSessionMode(mode);
-        }
+        // Emit event if the session is enabled
+        emit SmartSessionEmissaryConfigUpdated(account, config.permissionId, lockTag);
     }
 
-    /**
-     * @notice Enables policies for a session during user operation validation
-     * @dev This function handles the enabling of new policies and session validators
-     * @param enableData The EnableSession data containing the session to enable
-     * @param permissionId The unique identifier for the permission set
-     * @param account The account for which policies are being enabled
-     * @param mode The SmartSession mode being used
-     */
-    function _enablePolicies(
-        EnableSession memory enableData,
-        PermissionId permissionId,
+    /// @notice Removes a Smart Session Emissary configuration for a specific account
+    /// @param account The address of the account for which the configuration is being removed
+    /// @param config The Smart Session Emissary configuration to be removed
+    /// @param disableData The disable data containing the allocatorSignature, user signature,
+    ///                    disable session data, and expiration time
+    function removeConfig(
         address account,
-        SmartSessionMode mode
+        SmartSessionEmissaryConfig calldata config,
+        SmartSessionEmissaryDisable calldata disableData
+    )
+        external
+    {
+        // Derive lockTag from allocator, scope, resetPeriod
+        bytes12 lockTag = config.allocator.toAllocatorId().toLockTag(config.scope, config.resetPeriod);
+
+        // Verify data expires after current block timestamp
+        require(disableData.expires > block.timestamp, InvalidEmissaryDisableData());
+
+        // Disable policies
+        _disablePolicies(
+            account,
+            disableData.session,
+            config.permissionId,
+            config.sender,
+            lockTag,
+            disableData.expires,
+            config.allocator,
+            disableData.allocatorSig,
+            disableData.userSig
+        );
+
+        // Emit event if the session is removed
+        emit SmartSessionEmissaryConfigUpdated(account, config.permissionId, lockTag);
+    }
+
+    /// @notice Disables policies for an account, using the provided disable data after verifying
+    ///         required signatures.
+    /// @param account The address of the account for which policies are being disabled
+    /// @param disableData The data containing session and policy information to be disabled
+    /// @param permissionId The unique identifier for the permission set
+    /// @param sender The address of the sender for the session
+    /// @param lockTag The lock tag associated with the session
+    /// @param allocator The address of the allocator for the session
+    /// @param allocatorSig The signature from the allocator authorizing the session
+    /// @param userSig The signature from the user authorizing the session disable
+    function _disablePolicies(
+        address account,
+        DisableSession memory disableData,
+        PermissionId permissionId,
+        address sender,
+        bytes12 lockTag,
+        uint256 expires,
+        address allocator,
+        bytes calldata allocatorSig,
+        bytes calldata userSig
     )
         internal
     {
         // Increment nonce to prevent replay attacks
-        uint256 nonce = $signerNonce[permissionId][account]++;
-        bytes32 hash = enableData.getAndVerifyDigest(account, nonce, mode);
+        uint256 nonce = $emissaryNonce[account][lockTag]++;
 
-        // require signature on account
-        // this is critical as it is the only way to ensure that the user is aware of the policies and signer
-        // NOTE: although SmartSession implements a ERC1271 feature,
-        // it CAN NOT be used as a valid ERC1271 validator for
-        // this step. SmartSessions ERC1271 function must prevent this
-        if (IERC1271(account).isValidSignature(hash, enableData.permissionEnableSig) != EIP1271_MAGIC_VALUE) {
-            revert InvalidEnableSignature(account, hash);
-        }
+        // Get the hash for the disable operation
+        bytes32 hash = disableData.getAndVerifyDigest(permissionId, account, nonce, expires, lockTag, sender);
 
-        // Enable UserOp policies
-        $userOpPolicies.enable({
-            policyType: PolicyType.USER_OP,
-            permissionId: permissionId,
-            configId: permissionId.toUserOpPolicyId().toConfigId(),
-            policyDatas: enableData.sessionToEnable.userOpPolicies,
-            useRegistry: false
-        });
+        // Verify the user and allocator signatures
+        hash.verifySignatures(allocator, account, allocatorSig, userSig, false);
+
+        // Remove the session from the smart session config
+        _removeSession(permissionId, account, lockTag, sender);
+    }
+
+    /// @notice Enables policies for an account, using the provided enable data after verifying
+    ///         required signatures.
+    /// @param account The address of the account for which policies are being enabled
+    /// @param enableData The data containing session and policy information to be enabled
+    /// @param config The Smart Session Emissary configuration
+    /// @param lockTag The lock tag associated with the session
+    function _enablePolicies(
+        address account,
+        SmartSessionEmissaryEnable calldata enableData,
+        SmartSessionEmissaryConfig calldata config,
+        bytes12 lockTag
+    )
+        internal
+    {
+        // Increment nonce to prevent replay attacks
+        uint256 nonce = $emissaryNonce[account][lockTag]++;
+        bytes32 hash = enableData.session.getAndVerifyDigest(account, nonce, enableData.expires, lockTag, config.sender);
+
+        // Check if the permissionId is already enabled for the account
+        bool isInit = $smartSessionConfig[config.sender][lockTag].length(account) == 0;
+
+        // Verify the user and allocator signatures
+        hash.verifySignatures(config.allocator, account, enableData.allocatorSig, enableData.userSig, isInit);
 
         // Enable ERC1271 policies
-        $enabledERC7739.enable({
-            contexts: enableData.sessionToEnable.erc7739Policies.allowedERC7739Content, permissionId: permissionId
-        });
-
-        // Enabel ERC1271 policies
         $erc1271Policies.enable({
             policyType: PolicyType.ERC1271,
-            permissionId: permissionId,
-            configId: permissionId.toErc1271PolicyId().toConfigId(),
-            policyDatas: enableData.sessionToEnable.erc7739Policies.erc1271Policies,
-            useRegistry: false
+            permissionId: config.permissionId,
+            configId: config.permissionId.toErc1271PolicyId().toConfigId(),
+            policyDatas: enableData.session.sessionToEnable.erc1271Policies,
+            useRegistry: false,
+            account: account
         });
 
         // Enable action policies
         $actionPolicies.enable({
-            permissionId: permissionId, actionPolicyDatas: enableData.sessionToEnable.actions, useRegistry: false
+            permissionId: config.permissionId,
+            actionPolicyDatas: enableData.session.sessionToEnable.actions,
+            useRegistry: false,
+            account: account
         });
-
-        _setPermit4337Paymaster(permissionId, enableData.sessionToEnable.permitERC4337Paymaster);
 
         // Enable mode can involve enabling ISessionValidator (new Permission)
         // or just adding policies (existing permission)
@@ -188,261 +212,217 @@ contract SmartSession is ISmartSession, SmartSessionBase, SmartSessionERC7739 {
         // b) ISessionValidator is set => just add policies (above)
         // Attention: if the same policy that has already been configured is added again,
         // the policy will be overwritten with the new configuration
-        if (!_isISessionValidatorSet(permissionId, account)) {
+        if (!_isISessionValidatorSet(config.permissionId, account)) {
             $sessionValidators.enable({
-                permissionId: permissionId,
-                sessionValidator: enableData.sessionToEnable.sessionValidator,
-                sessionValidatorConfig: enableData.sessionToEnable.sessionValidatorInitData,
-                useRegistry: false
+                permissionId: config.permissionId,
+                sessionValidator: enableData.session.sessionToEnable.sessionValidator,
+                sessionValidatorConfig: enableData.session.sessionToEnable.sessionValidatorInitData,
+                useRegistry: false,
+                account: account
             });
         }
 
         // Mark the session as enabled
-        $enabledSessions.add(msg.sender, PermissionId.unwrap(permissionId));
+        $smartSessionConfig[config.sender][lockTag]
+        .add({ account: account, value: PermissionId.unwrap(config.permissionId) });
     }
 
-    /**
-     * @notice Enforces policies and checks ISessionValidator signature for a session
-     * @dev This function is the core of policy enforcement in SmartSession
-     * @param permissionId The unique identifier for the permission set
-     * @param userOpHash The hash of the user operation
-     * @param userOp The user operation being validated
-     * @param decompressedSignature The decompressed signature for validation
-     * @param account The account for which policies are being enforced
-     * @return vd ValidationData containing the result of policy checks
-     */
-    function _enforcePolicies(
-        PermissionId permissionId,
-        bytes32 userOpHash,
-        PackedUserOperation calldata userOp,
-        bytes memory decompressedSignature,
-        address account
+    /* //////////////////////////////////////////////////////////////
+                               EXECUTION
+    //////////////////////////////////////////////////////////////*/
+
+    /// @notice Validates executions using SmartSession policies
+    /// @param account The account for which the policies are being enforced
+    /// @param hash The hash of the user operation
+    /// @param emissaryData Packed smart session data including mode, permissionId and signature
+    /// @param executions The execution data for the user operation
+    /// @param lockTag The lock tag associated with the execution configuration
+    /// @return bytes4 The function selector on success, or a specific failure code otherwise
+    function _verifyExecutionSmartSession(
+        address account,
+        bytes32 hash,
+        bytes calldata emissaryData,
+        Execution[] calldata executions,
+        bytes12 lockTag
     )
         internal
-        returns (ValidationData vd)
+        virtual
+        returns (bytes4)
+    {
+        // Init validSig
+        bool validSig;
+
+        // unpacking data packed in data
+        (PermissionId permissionId, bytes calldata packedSig) = emissaryData.unpack();
+
+        // Enforce policies without enabling new ones
+        validSig = _enforcePolicies({
+            permissionId: permissionId,
+            hash: hash,
+            executions: executions,
+            decompressedSignature: packedSig,
+            account: account,
+            lockTag: lockTag
+        });
+
+        // Return the function selector on success, or a specific failure code otherwise.
+        return validSig ? this.verifyExecution.selector : INVALID_RETURN;
+    }
+
+    /* //////////////////////////////////////////////////////////////
+                                 CLAIM
+    //////////////////////////////////////////////////////////////*/
+
+    /// @notice Verifies digests using SmartSession (mode 2)
+    /// @param sponsor The sponsor account associated with the claim
+    /// @param claimHash The hash of the claim being verified
+    /// @param emissaryData Data containing the permissionId and signature
+    /// @param lockTag The lock tag associated with the claim
+    /// @return result The verifyClaim selector if valid, otherwise 0xffffffff
+    function _verifyClaimSmartSession(address sponsor, bytes32 claimHash, bytes calldata emissaryData, bytes12 lockTag)
+        internal
+        view
+        virtual
+        returns (bytes4 result)
+    {
+        bool success = _erc1271IsValidSignatureNowCalldata(msg.sender, claimHash, emissaryData, sponsor, lockTag);
+        /// @solidity memory-safe-assembly
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            // `success ? bytes4(keccak256("verifyClaim(address,bytes32,bytes32,bytes,bytes12)")) :
+            // 0xffffffff`.
+            result := shl(224, or(0xf699ba1c, sub(0, iszero(success))))
+        }
+    }
+
+    /* //////////////////////////////////////////////////////////////
+                                INTERNAL
+    //////////////////////////////////////////////////////////////*/
+
+    /// @notice Enforces policies and checks ISessionValidator signature for a session
+    /// @dev This function is the core of policy enforcement in SmartSession
+    /// @param permissionId The unique identifier for the permission set
+    /// @param hash Message hash to be validated
+    /// @param executions The execution data for the user operation
+    /// @param decompressedSignature The decompressed signature for validation
+    /// @param account The account for which policies are being enforced
+    /// @param lockTag The lock tag associated with the session
+    /// @return validSig True if the signature is valid, false otherwise
+    function _enforcePolicies(
+        PermissionId permissionId,
+        bytes32 hash,
+        Execution[] calldata executions,
+        bytes memory decompressedSignature,
+        address account,
+        bytes12 lockTag
+    )
+        internal
+        returns (bool validSig)
     {
         // ensure that the permissionId is enabled
-        if (!$enabledSessions.contains({ account: account, value: PermissionId.unwrap(permissionId) })) {
+        if (!$smartSessionConfig[msg.sender][lockTag].contains(account, PermissionId.unwrap(permissionId))) {
             revert InvalidPermissionId(permissionId);
         }
 
-        /* --- Scope: Check UserOp Policies --- */
-        {
-            // by default, minPolicies for userOp policies is 0
-            // in the case of the UserOp having paymasterAndData and the user opted in, to allow the PermissionID to use
-            // paymasters, this value will be 1
-            uint256 minPolicies;
+        /* //////////////////////////////////////////////////////////////
+                                HANDLE EXECUTIONS
+        //////////////////////////////////////////////////////////////*/
 
-            // if a paymaster is used in this userop, we must ensure that the user authorized this PermissionID to use
-            // any
-            // paymasters. Should this be the case, a UserOpPolicy must run, this could be a yes policy, or a specific
-            // UserOpPolicy that can destructure the paymasterAndData and inspect it
-            if (userOp.paymasterAndData.length != 0) {
-                if ($permitERC4337Paymaster[permissionId][account]) minPolicies = 1;
-                else revert PaymasterValidationNotEnabled(permissionId);
-            }
-            /* ´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-            /* Check UserOp Policies */
-            /* .•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-            // Check UserOp policies
-            // This reverts if policies are violated
-            vd = $userOpPolicies.check({
+        // Check action policies for the given permissionId and batch execution
+        $actionPolicies.actionPolicies
+            .checkBatch7579Exec({
+                executions: executions,
                 permissionId: permissionId,
-                callOnIPolicy: abi.encodeCall(
-                    IUserOpPolicy.checkUserOpPolicy, (permissionId.toUserOpPolicyId().toConfigId(), userOp)
-                ),
-                minPolicies: minPolicies
+                minPolicies: 1, // minimum of one actionPolicy must be set.
+                account: account
             });
-        }
-        /* --- End Scope: Check UserOp Policies --- */
 
-        bytes4 selector = bytes4(userOp.callData[0:4]);
+        /* //////////////////////////////////////////////////////////////
+                                CHECK SESSION KEY
+        //////////////////////////////////////////////////////////////*/
 
-        /* ´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-        /* Handle Executions */
-        /* .•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-        // if the selector indicates that the userOp is an execution,
-        // action policies have to be checked
-        if (selector == IERC7579Account.execute.selector) {
-            // Decode ERC7579 execution mode
-            (CallType callType, ExecType execType) = userOp.callData.get7579ExecutionTypes();
-            // ERC7579 allows for different execution types, but SmartSession only supports the default execution type
-            if (ExecType.unwrap(execType) != ExecType.unwrap(EXECTYPE_DEFAULT)) {
-                revert UnsupportedExecutionType();
-            }
-            // DEFAULT EXEC & BATCH CALL
-            else if (callType == CALLTYPE_BATCH) {
-                vd = vd.intersect(
-                    $actionPolicies.actionPolicies
-                        .checkBatch7579Exec({
-                            userOp: userOp,
-                            permissionId: permissionId,
-                            minPolicies: 1 // minimum of one actionPolicy must be set.
-                        })
-                );
-            }
-            // DEFAULT EXEC & SINGLE CALL
-            else if (callType == CALLTYPE_SINGLE) {
-                (address target, uint256 value, bytes calldata callData) =
-                    userOp.callData.decodeUserOpCallData().decodeSingle();
-                vd = vd.intersect(
-                    $actionPolicies.actionPolicies
-                        .checkSingle7579Exec({
-                            permissionId: permissionId,
-                            target: target,
-                            value: value,
-                            callData: callData,
-                            minPolicies: 1 // minimum of one actionPolicy must be set.
-                        })
-                );
-            }
-            // DelegateCalls are not supported by SmartSession
-            else {
-                revert UnsupportedCallType(callType);
-            }
-        }
-        // SmartSession does not support executeUserOp,
-        // should this function selector be used in the userOp: revert
-        // see why: https://github.com/erc7579/smartsessions/issues/17
-        else if (selector == IAccountExecute.executeUserOp.selector) {
-            revert UnsupportedExecutionType();
-        }
-        /* ´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-        /* Handle Actions */
-        /* .•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-        // all other executions are supported and are handled by the actionPolicies
-        else {
-            ActionId actionId = account.toActionId(bytes4(userOp.callData[:4]));
-
-            vd = vd.intersect(
-                $actionPolicies.actionPolicies[actionId]
-                .check({
-                    permissionId: permissionId,
-                    callOnIPolicy: abi.encodeCall(
-                        IActionPolicy.checkAction,
-                        (
-                            permissionId.toConfigId(actionId),
-                            account, // account
-                            account, // target
-                            0, // value
-                            userOp.callData // data
-                        )
-                    ),
-                    minPolicies: 1 // minimum of one actionPolicy must be set.
-                })
-            );
+        // Check if this digest was already validated
+        if (hash.isAlreadyVerified(account, permissionId, lockTag)) {
+            return true;
         }
 
-        /* ´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-        /* Check SessionKey ISessionValidator */
-        /* .•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
         // perform signature check with ISessionValidator
         // this function will revert if no ISessionValidator is set for this permissionId
-        bool validSig = $sessionValidators.isValidISessionValidator({
-            hash: userOpHash, account: account, permissionId: permissionId, signature: decompressedSignature
+        validSig = $sessionValidators.isValidISessionValidator({
+            hash: hash, account: account, permissionId: permissionId, signature: decompressedSignature
         });
 
-        // if the ISessionValidator signature is invalid, the userOp is invalid
-        if (!validSig) return ERC4337_VALIDATION_FAILED;
-
-        // In every Policy check, the ERC4337.ValidationData sigFailed required to be false, SmartSession validation
-        // flow will only reach to this line, if all Policies return valid and ISessionValidator signature is valid
-        return vd;
-    }
-
-    /**
-     * @notice SessionKey ERC-1271 signature validation
-     * this function implements the ERC-1271 forwarding function defined by ERC-7579
-     * SessionKeys can be used to sign messages and validate ERC-1271 on behalf of Accounts
-     * In order to validate a signature, the signature must be wrapped with ERC-7739
-     * @param sender The address of ERC-1271 sender
-     * @param hash The hash of the message
-     * @param signature The signature of the message
-     *         signature is expected to be in the format:
-     *         (PermissionId (32 bytes),
-     *          ERC7739 (abi.encodePacked(signatureForSessionValidator,
-     *                                    _DOMAIN_SEP_B,
-     *                                    contents,
-     *                                    contentsType,
-     *                                    uint16(contentsType.length))
-     */
-    function isValidSignatureWithSender(address sender, bytes32 hash, bytes calldata signature)
-        external
-        view
-        override
-        returns (bytes4 result)
-    {
-        // ERC-7739 support detection
-        if (hash == 0x7739773977397739773977397739773977397739773977397739773977397739) return bytes4(0x77390001);
-        // disallow that session can be authorized by other sessions
-        if (sender == address(this)) return EIP1271_FAILED;
-
-        bool success = _erc1271IsValidSignatureViaNestedEIP712(sender, hash, _erc1271UnwrapSignature(signature));
-        /// @solidity memory-safe-assembly
-        assembly {
-            // `success ? bytes4(keccak256("isValidSignature(bytes32,bytes)")) : 0xffffffff`.
-            // We use `0xffffffff` for invalid, in convention with the reference implementation.
-            result := shl(224, or(0x1626ba7e, sub(0, iszero(success))))
+        // Cache the result if valid
+        if (validSig) {
+            hash.markAsVerified(account, permissionId, lockTag);
         }
     }
 
-    /**
-     * @notice Validates an ERC-1271 signature with additional ERC-7739 content checks
-     * @dev This function performs several checks to validate the signature:
-     *      1. Verifies that the permissionId is enabled for the sender
-     *      2. Ensures the ERC-7739 content is enabled for the given permissionId
-     *      3. Checks the ERC-1271 policy
-     *      4. Validates the signature using ISessionValidator
-     * @dev This function returns false if a permissionId supplied within the signature is not enabled
-     * @dev This function returns false if the ERC-7739 content is not enabled for the given permissionId
-     * @param sender The address initiating the signature validation
-     * @param hash The hash of the data to be signed
-     * @param signature The signature to be validated (first 32 bytes contain the permissionId)
-     * @param contents The ERC-7739 content to be validated
-     * @return valid Boolean indicating whether the signature is valid
-     */
+    /// @notice Validates an ERC-1271 signature
+    /// @dev This function performs several checks to validate the signature:
+    ///      1. Verifies that the permissionId is enabled for the sender
+    ///      2. Extracts the session validator signature using the provided length
+    ///      3. Checks the ERC-1271 policy with the remaining policy data
+    ///      4. Validates the signature using ISessionValidator
+    /// @dev Signature format:
+    /// [permissionId(32)][sigLength(32)][validatorSig(sigLength)][policyData]
+    /// @param sender The address initiating the signature validation
+    /// @param hash The hash of the data to be signed
+    /// @param signature The signature to be validated
+    /// @param sponsor The address of the account for which the signature is being validated
+    /// @param lockTag The lock tag associated with the session
+    /// @return valid Boolean indicating whether the signature is valid
     function _erc1271IsValidSignatureNowCalldata(
         address sender,
         bytes32 hash,
         bytes calldata signature,
-        bytes32 appDomainSeparator,
-        bytes calldata contents
+        address sponsor,
+        bytes12 lockTag
     )
         internal
         view
-        virtual
-        override
         returns (bool)
     {
-        bytes32 contentHash = string(contents).hashERC7739Content();
         // isolate the PermissionId and actual signature from the supplied signature param
         PermissionId permissionId = PermissionId.wrap(bytes32(signature[0:32]));
-        signature = signature[32:];
 
         // forgefmt: disable-next-item
         if (
-            // return false if the permissionId is not enabled
-            !$enabledSessions.contains(msg.sender, PermissionId.unwrap(permissionId))
-            // return false if the content is not enabled
-            || !$enabledERC7739.enabledContentNames[permissionId][appDomainSeparator].contains(msg.sender, contentHash)
+            // return false if permissionId is not enabled for lockTag and sender
+             !$smartSessionConfig[sender][lockTag].contains(
+                sponsor, PermissionId.unwrap(permissionId)
+            )
         ) return false;
+
+        // Extract the offset for the policy data
+        uint256 policyDataOffset = uint256(bytes32(signature[32:64]));
 
         // check the ERC-1271 policy
         bool valid = $erc1271Policies.checkERC1271({
-            account: msg.sender,
+            account: sponsor,
             requestSender: sender,
             hash: hash,
-            signature: signature,
+            signature: signature[policyDataOffset:], // extract the policy data after the
+                // validator signature
             permissionId: permissionId,
-            configId: permissionId.toErc1271PolicyId().toConfigId(),
+            configId: permissionId.toErc1271PolicyId().toConfigId(sponsor),
             minPoliciesToEnforce: 1
         });
 
         // if the erc1271 policy check failed, return false
         if (!valid) return valid;
+
+        // Check if this digest was already validated
+        if (hash.isAlreadyVerified(sponsor, permissionId, lockTag)) {
+            return true;
+        }
+
         // this call reverts if the ISessionValidator is not set
         return $sessionValidators.isValidISessionValidator({
-            hash: hash, account: msg.sender, permissionId: permissionId, signature: signature
+            hash: hash,
+            account: sponsor,
+            permissionId: permissionId,
+            signature: signature[64:policyDataOffset] // extract the validator signature
         });
     }
 }

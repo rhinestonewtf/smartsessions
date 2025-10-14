@@ -49,18 +49,25 @@ library PolicyLib {
      *
      * @return vd The intersected ValidationData result from all policy checks.
      */
-    function check(Policy storage $self, PermissionId permissionId, bytes memory callOnIPolicy, uint256 minPolicies)
+    function check(
+        Policy storage $self,
+        PermissionId permissionId,
+        bytes memory callOnIPolicy,
+        uint256 minPolicies,
+        address account
+    )
         internal
         returns (ValidationData vd)
     {
         // Get the list of policies for the given permissionId and account
-        address[] memory policies = $self.policyList[permissionId].values({ account: msg.sender });
+        address[] memory policies = $self.policyList[permissionId].values({ account: account });
         uint256 length = policies.length;
 
         // Ensure the minimum number of policies is met.
         // Revert otherwise. Current minPolicies for userOp policies is 0.
         // Current minPolicies for action policies is 1.
-        // This ensures sudo (open) permissions can be created only by explicitly setting SudoPolicy/YesPolicy
+        // This ensures sudo (open) permissions can be created only by explicitly setting
+        // SudoPolicy/YesPolicy
         // as the only action policies
         if (minPolicies > length) revert ISmartSession.NoPoliciesSet(permissionId);
 
@@ -85,18 +92,27 @@ library PolicyLib {
      * that the Policy fallback procedure SHOULD be used
      *             - Intersected Validation data of policies.
      */
-    function tryCheck(Policy storage $self, PermissionId permissionId, bytes memory callOnIPolicy, uint256 minPolicies)
+    function tryCheck(
+        Policy storage $self,
+        PermissionId permissionId,
+        bytes memory callOnIPolicy,
+        uint256 minPolicies,
+        address account
+    )
         internal
         returns (ValidationData vd)
     {
         // Get the list of policies for the given permissionId and account
-        address[] memory policies = $self.policyList[permissionId].values({ account: msg.sender });
+        address[] memory policies = $self.policyList[permissionId].values({ account: account });
         uint256 length = policies.length;
 
-        // Ensure the minimum number of policies is met. I.e. there are enough policies configured for given ActionId
-        // Current minPolicies is 1 for action policies. That means, if there is no policies at all confgured
+        // Ensure the minimum number of policies is met. I.e. there are enough policies configured
+        // for given ActionId
+        // Current minPolicies is 1 for action policies. That means, if there is no policies at all
+        // configured
         // for a given ActionId (ActionId was not enabled), execution proceeds to the fallback flow.
-        // There can be any amount of fallback action policies configured, and those will be applied to all actionIds,
+        // There can be any amount of fallback action policies configured, and those will be applied
+        // to all actionIds,
         // that were not configured explicitly.
         if (minPolicies > length) {
             return RETRY_WITH_FALLBACK;
@@ -164,7 +180,8 @@ library PolicyLib {
         address target,
         uint256 value,
         bytes calldata callData,
-        uint256 minPolicies
+        uint256 minPolicies,
+        address account
     )
         internal
         returns (ValidationData vd)
@@ -178,7 +195,7 @@ library PolicyLib {
         }
 
         // Prevent potential bypass of policy checks through nested self executions
-        if (targetSig == IERC7579Account.execute.selector && target == msg.sender) {
+        if (targetSig == IERC7579Account.execute.selector && target == account) {
             revert ISmartSession.InvalidSelfCall();
         }
 
@@ -188,9 +205,12 @@ library PolicyLib {
         // malloc for actionId
         ActionId actionId;
 
-        // should the target of this call be the smart session module itself, we will use the designated sentinel
-        // actionId for smartsession calls. The user has to explicitly set the smartsession call policy to allow this.
-        // @dev this is a special case, as a session key should normally not be utilized to configure other sessions
+        // should the target of this call be the smart session module itself, we will use the
+        // designated sentinel
+        // actionId for smartsession calls. The user has to explicitly set the smartsession call
+        // policy to allow this.
+        // @dev this is a special case, as a session key should normally not be utilized to
+        // configure other sessions
         if (target == address(this)) {
             actionId = FALLBACK_ACTIONID_SMARTSESSION_CALL;
         }
@@ -203,26 +223,32 @@ library PolicyLib {
             .tryCheck({
                 permissionId: permissionId,
                 callOnIPolicy: abi.encodeCall(
-                    IActionPolicy.checkAction, (permissionId.toConfigId(actionId), msg.sender, target, value, callData)
+                    IActionPolicy.checkAction, (permissionId.toConfigId(actionId), account, target, value, callData)
                 ),
-                minPolicies: minPolicies
+                minPolicies: minPolicies,
+                account: account
             });
-            // If tryCheck returns RETRY_WITH_FALLBACK magic value, that means not enough policies were configured
-            // for the actionId. Proceed with checking fallback action policies ($policies[FALLBACK_ACTIONID]).
+            // If tryCheck returns RETRY_WITH_FALLBACK magic value, that means not enough policies
+            // were configured
+            // for the actionId. Proceed with checking fallback action policies
+            // ($policies[FALLBACK_ACTIONID]).
             if (vd == RETRY_WITH_FALLBACK) actionId = FALLBACK_ACTIONID;
             // otherwise return the validation data
             else return vd;
         }
-        // call the fallback policy for either FALLBACK_ACTIONID or FALLBACK_ACTIONID_SMARTSESSION_CALL
-        // If no policies were configured for FALLBACK_ACTIONID or FALLBACK_ACTIONID_SMARTSESSION_CALL this call will
+        // call the fallback policy for either FALLBACK_ACTIONID or
+        // FALLBACK_ACTIONID_SMARTSESSION_CALL
+        // If no policies were configured for FALLBACK_ACTIONID or
+        // FALLBACK_ACTIONID_SMARTSESSION_CALL this call will
         // revert
         vd = $policies[actionId]
         .check({
             permissionId: permissionId,
             callOnIPolicy: abi.encodeCall(
-                IActionPolicy.checkAction, (permissionId.toConfigId(actionId), msg.sender, target, value, callData)
+                IActionPolicy.checkAction, (permissionId.toConfigId(actionId), account, target, value, callData)
             ),
-            minPolicies: minPolicies
+            minPolicies: minPolicies,
+            account: account
         });
         return vd;
     }
@@ -244,15 +270,14 @@ library PolicyLib {
      */
     function checkBatch7579Exec(
         mapping(ActionId => Policy) storage $policies,
-        PackedUserOperation calldata userOp,
+        Execution[] calldata executions,
         PermissionId permissionId,
-        uint256 minPolicies
+        uint256 minPolicies,
+        address account
     )
         internal
-        returns (ValidationData vd)
     {
         // Decode the batch of 7579 executions from the user operation's call data
-        Execution[] calldata executions = userOp.callData.decodeUserOpCallData().decodeBatch();
         uint256 length = executions.length;
         // Revert if there are no executions in the batch
         if (length == 0) revert ISmartSession.NoExecutionsInBatch();
@@ -261,17 +286,17 @@ library PolicyLib {
         for (uint256 i; i < length; i++) {
             Execution calldata execution = executions[i];
 
-            // Check policies for the current execution and intersect the result with previous checks
-            ValidationData _vd = checkSingle7579Exec({
+            // Check policies for the current execution and intersect the result with previous
+            // checks
+            PolicyLibV2.checkSingle7579Exec({
                 $policies: $policies,
                 permissionId: permissionId,
                 target: execution.target,
                 value: execution.value,
                 callData: execution.callData,
-                minPolicies: minPolicies
+                minPolicies: minPolicies,
+                account: account
             });
-
-            vd = vd.intersect(_vd);
         }
     }
 

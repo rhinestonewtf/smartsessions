@@ -55,4 +55,9 @@ library EncodeLib {
     {
         (enableData, signature) = abi.decode(packedSig.flzDecompress(), (EnableSession, bytes));
     }
+
+    function unpack(bytes calldata packed) internal pure returns (PermissionId permissionId, bytes calldata data) {
+        permissionId = PermissionId.wrap(bytes32(packed[0:32]));
+        data = packed[32:];
+    }
 }

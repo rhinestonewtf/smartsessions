@@ -8,9 +8,9 @@ import { EnumerableSet } from "./utils/EnumerableSet4337.sol";
 import { EnumerableMap } from "./utils/EnumerableMap4337.sol";
 import { FlatBytesLib } from "flatbytes/BytesLib.sol";
 
-/*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-/*                       Parameters                           */
-/*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+/* ´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+/* Parameters */
+/* .•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
 struct EnableSession {
     uint8 chainDigestIndex;
@@ -57,10 +57,8 @@ struct Session {
     ISessionValidator sessionValidator;
     bytes sessionValidatorInitData;
     bytes32 salt;
-    PolicyData[] userOpPolicies;
-    ERC7739Data erc7739Policies;
+    PolicyData[] erc1271Policies;
     ActionData[] actions;
-    bool permitERC4337Paymaster;
 }
 
 struct MultiChainSession {
@@ -116,9 +114,9 @@ struct ERC7739ContextHashes {
     bytes32[] contentNameHashes;
 }
 
-/*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-/*                         Storage                            */
-/*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+/* ´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+/* Storage */
+/* .•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
 struct SignerConf {
     ISessionValidator sessionValidator;
@@ -140,13 +138,13 @@ struct EnumerableERC7739Config {
 }
 
 // struct EnumerableERC7739Config {
-//     mapping(PermissionId => EnumerableMap.Bytes32ToBytes32Map) erc1271Policies;
-// }
+// mapping(PermissionId => EnumerableMap.Bytes32ToBytes32Map) erc1271Policies;
+//}
 // mapping(PermissionId => EnumerableSet.Bytes32Set) enabledDomainSeparators;
 
-/*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-/*                 Custom Types & Constants                   */
-/*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+/* ´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+/* Custom Types & Constants */
+/* .•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
 type PermissionId is bytes32;
 

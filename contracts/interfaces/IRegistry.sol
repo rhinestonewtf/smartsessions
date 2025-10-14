@@ -5,9 +5,9 @@ type ModuleType is uint256;
 
 interface IRegistry {
     event NewTrustedAttesters(address indexed smartAccount);
-    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-    /*          Check with Registry internal attesters            */
-    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+    /* ´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /* Check with Registry internal attesters */
+    /* .•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     function check(address module) external view;
 
@@ -28,18 +28,11 @@ interface IRegistry {
      */
     function trustAttesters(uint8 threshold, address[] calldata attesters) external;
 
-    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-    /*              Check with external attester(s)               */
-    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+    /* ´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /* Check with external attester(s) */
+    /* .•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     function check(address module, address[] calldata attesters, uint256 threshold) external view;
 
-    function check(
-        address module,
-        ModuleType moduleType,
-        address[] calldata attesters,
-        uint256 threshold
-    )
-        external
-        view;
+    function check(address module, ModuleType moduleType, address[] calldata attesters, uint256 threshold) external view;
 }

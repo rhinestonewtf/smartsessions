@@ -106,14 +106,14 @@ contract TimeFramePolicyTest is PolicyTestBase {
         assertEq(config.validAfter(), uint48(block.timestamp));
     }
 
-    //test as 1271 policy
+    // test as 1271 policy
     function test_use_timeframe_policy_as_1271_policy_success() public returns (PermissionId permissionId) {
         _testIsValidSignature(
             "Permit(bytes32 stuff)", "Permit", true, permissionId_timeframed1271, false, sessionSigner1
         );
     }
 
-    //test as 1271 policy
+    // test as 1271 policy
     function test_use_timeframe_policy_as_1271_policy_fail() public returns (PermissionId permissionId) {
         vm.warp(block.timestamp + 11 minutes);
         _testIsValidSignature(
@@ -121,7 +121,7 @@ contract TimeFramePolicyTest is PolicyTestBase {
         );
     }
 
-    //test as action policy
+    // test as action policy
     function test_use_timeframe_policy_as_Action_policy_success() public returns (PermissionId permissionId) {
         bytes memory callData = abi.encodeCall(MockTarget.setValue, (1337));
         UserOpData memory userOpData =
@@ -132,7 +132,7 @@ contract TimeFramePolicyTest is PolicyTestBase {
         assertEq(target.value(), 1337);
     }
 
-    //test as action policy
+    // test as action policy
     function test_use_timeframe_policy_as_Action_policy_fail() public returns (PermissionId permissionId) {
         bytes memory callData = abi.encodeCall(MockTarget.setValue, (1337));
         UserOpData memory userOpData =

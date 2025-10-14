@@ -2,7 +2,11 @@
 pragma solidity ^0.8.23;
 
 import { PackedUserOperation, _packValidationData } from "modulekit/external/ERC4337.sol";
-import { IModule as IERC7579Module, VALIDATION_SUCCESS, VALIDATION_FAILED } from "erc7579/interfaces/IERC7579Module.sol";
+import {
+    IModule as IERC7579Module,
+    VALIDATION_SUCCESS,
+    VALIDATION_FAILED
+} from "erc7579/interfaces/IERC7579Module.sol";
 import "../DataTypes.sol";
 import "forge-std/interfaces/IERC165.sol";
 
@@ -11,8 +15,8 @@ import "forge-std/interfaces/IERC165.sol";
  * Since it's not the account calling into this contract, and check functions are called during the ERC4337 validation
  * phase, IPolicy implementations MUST follow ERC4337 storage and opcode restructions
  * A recommend storage layout to store policy related data:
- *      mapping(id   =>   msg.sender   =>   userOp.sender(account) => state)
- *                        ^ smartSession    ^ smart account (associated storage)
+ *      mapping(id => msg.sender => userOp.sender(account) => state)
+ *                        ^ smartSession ^ smart account (associated storage)
  */
 interface IPolicy is IERC165 {
     event PolicySet(ConfigId id, address multiplexer, address account);
@@ -57,13 +61,7 @@ interface IUserOpPolicy is IPolicy {
  * - VALIDATION_FAILED: The action is not allowed.
  */
 interface IActionPolicy is IPolicy {
-    function checkAction(
-        ConfigId id,
-        address account,
-        address target,
-        uint256 value,
-        bytes calldata data
-    )
+    function checkAction(ConfigId id, address account, address target, uint256 value, bytes calldata data)
         external
         returns (uint256);
 }

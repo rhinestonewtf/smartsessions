@@ -31,10 +31,7 @@ contract UniversalActionPolicyTest is BaseTest {
 
         // get userOp from ModuleKit
         UserOpData memory userOpData = instance.getExecOps({
-            target: address(mockCallee),
-            value: 0,
-            callData: callData,
-            txValidator: address(smartSession)
+            target: address(mockCallee), value: 0, callData: callData, txValidator: address(smartSession)
         });
         // session key signs the userOP NOTE: this is using encodeUse() since the session is already enabled
         // mock signture, as it is YesPolicy that is being used in the session
@@ -60,10 +57,7 @@ contract UniversalActionPolicyTest is BaseTest {
 
         // get userOp from ModuleKit
         UserOpData memory userOpData = instance.getExecOps({
-            target: address(mockCallee),
-            value: 0,
-            callData: callData,
-            txValidator: address(smartSession)
+            target: address(mockCallee), value: 0, callData: callData, txValidator: address(smartSession)
         });
         // session key signs the userOP NOTE: this is using encodeUse() since the session is already enabled
         userOpData.userOp.signature = EncodeLib.encodeUse({ permissionId: permissionId, sig: hex"4141414141" });
@@ -73,10 +67,7 @@ contract UniversalActionPolicyTest is BaseTest {
 
         // create another userOp
         userOpData = instance.getExecOps({
-            target: address(mockCallee),
-            value: 0,
-            callData: callData,
-            txValidator: address(smartSession)
+            target: address(mockCallee), value: 0, callData: callData, txValidator: address(smartSession)
         });
         userOpData.userOp.signature = EncodeLib.encodeUse({ permissionId: permissionId, sig: hex"4141414141" });
 
@@ -132,12 +123,7 @@ contract UniversalActionPolicyTest is BaseTest {
         smartSession.enableSessions(enableSessionsArray);
     }
 
-    function _getMockUniPolicyInitData(
-        ActionId actionId,
-        address refAddressRef,
-        uint256 refUint256,
-        bytes32 refBytes32
-    )
+    function _getMockUniPolicyInitData(ActionId actionId, address refAddressRef, uint256 refUint256, bytes32 refBytes32)
         internal
         pure
         returns (bytes memory policyInitData)

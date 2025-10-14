@@ -36,10 +36,7 @@ contract ArgPolicyIntegrationTest is BaseTest {
 
         // get userOp from ModuleKit
         UserOpData memory userOpData = instance.getExecOps({
-            target: address(mockCallee),
-            value: 0,
-            callData: callData,
-            txValidator: address(smartSession)
+            target: address(mockCallee), value: 0, callData: callData, txValidator: address(smartSession)
         });
         // session key signs the userOP using encodeUse() since the session is already enabled
         userOpData.userOp.signature = EncodeLib.encodeUse({ permissionId: permissionId, sig: hex"4141414141" });
@@ -64,10 +61,7 @@ contract ArgPolicyIntegrationTest is BaseTest {
 
         // get userOp from ModuleKit
         UserOpData memory userOpData = instance.getExecOps({
-            target: address(mockCallee),
-            value: 0,
-            callData: callData,
-            txValidator: address(smartSession)
+            target: address(mockCallee), value: 0, callData: callData, txValidator: address(smartSession)
         });
         // session key signs the userOP using encodeUse() since the session is already enabled
         userOpData.userOp.signature = EncodeLib.encodeUse({ permissionId: permissionId, sig: hex"4141414141" });
@@ -89,10 +83,7 @@ contract ArgPolicyIntegrationTest is BaseTest {
 
         // get userOp from ModuleKit
         UserOpData memory userOpData = instance.getExecOps({
-            target: address(mockCallee),
-            value: 0,
-            callData: callData,
-            txValidator: address(smartSession)
+            target: address(mockCallee), value: 0, callData: callData, txValidator: address(smartSession)
         });
         // session key signs the userOP using encodeUse() since the session is already enabled
         userOpData.userOp.signature = EncodeLib.encodeUse({ permissionId: permissionId, sig: hex"4141414141" });
@@ -102,10 +93,7 @@ contract ArgPolicyIntegrationTest is BaseTest {
 
         // create another userOp
         userOpData = instance.getExecOps({
-            target: address(mockCallee),
-            value: 0,
-            callData: callData,
-            txValidator: address(smartSession)
+            target: address(mockCallee), value: 0, callData: callData, txValidator: address(smartSession)
         });
         userOpData.userOp.signature = EncodeLib.encodeUse({ permissionId: permissionId, sig: hex"4141414141" });
 
@@ -130,10 +118,7 @@ contract ArgPolicyIntegrationTest is BaseTest {
 
         // get userOp from ModuleKit
         UserOpData memory userOpData = instance.getExecOps({
-            target: address(mockCallee),
-            value: 0,
-            callData: callData,
-            txValidator: address(smartSession)
+            target: address(mockCallee), value: 0, callData: callData, txValidator: address(smartSession)
         });
         // session key signs the userOP
         userOpData.userOp.signature = EncodeLib.encodeUse({ permissionId: permissionId, sig: hex"4141414141" });
@@ -172,7 +157,7 @@ contract ArgPolicyIntegrationTest is BaseTest {
         userOpData.execUserOps();
     }
 
-    /*//////////////////////////////////////////////////////////////
+    /* //////////////////////////////////////////////////////////////
                          HELPER FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
@@ -284,8 +269,7 @@ contract ArgPolicyIntegrationTest is BaseTest {
 
         // Set up the rules in the ActionConfig
         ActionConfig memory config = ActionConfig({
-            valueLimitPerUse: 1e21,
-            paramRules: ParamRules({ rootNodeIndex: 0, rules: rules, packedNodes: packedNodes })
+            valueLimitPerUse: 1e21, paramRules: ParamRules({ rootNodeIndex: 0, rules: rules, packedNodes: packedNodes })
         });
 
         policyInitData = abi.encode(config);
@@ -340,8 +324,7 @@ contract ArgPolicyIntegrationTest is BaseTest {
 
         // Logic: (addrRule OR uint256Rule) AND bytes32Rule
         ActionConfig memory config = ActionConfig({
-            valueLimitPerUse: 1e21,
-            paramRules: ParamRules({ rootNodeIndex: 4, rules: rules, packedNodes: packedNodes })
+            valueLimitPerUse: 1e21, paramRules: ParamRules({ rootNodeIndex: 4, rules: rules, packedNodes: packedNodes })
         });
 
         policyInitData = abi.encode(config);

@@ -36,7 +36,7 @@ library AssociatedArrayLib {
 
     function _get(bytes32 slot, uint256 index) private view returns (bytes32 value) {
         assembly {
-            //if (index >= _length(s, account)) revert AssociatedArray_OutOfBounds(index);
+            // if (index >= _length(s, account)) revert AssociatedArray_OutOfBounds(index);
             if iszero(lt(index, sload(slot))) {
                 mstore(0, 0x8277484f) // `AssociatedArray_OutOfBounds(uint256)`
                 mstore(0x20, index)
@@ -81,7 +81,7 @@ library AssociatedArrayLib {
 
     function _set(bytes32 slot, uint256 index, bytes32 value) private {
         assembly {
-            //if (index >= _length(s, account)) revert AssociatedArray_OutOfBounds(index);
+            // if (index >= _length(s, account)) revert AssociatedArray_OutOfBounds(index);
             if iszero(lt(index, sload(slot))) {
                 mstore(0, 0x8277484f) // `AssociatedArray_OutOfBounds(uint256)`
                 mstore(0x20, index)

@@ -5,7 +5,13 @@ import { IUserOperationBuilder, PackedUserOperation, Execution } from "./IUserOp
 import { IEntryPoint } from "modulekit/external/ERC4337.sol";
 import { Exec } from "account-abstraction/utils/Exec.sol";
 import { IERC7579Account } from "erc7579/interfaces/IERC7579Account.sol";
-import { ModeCode as ExecutionMode, ExecType, CallType, CALLTYPE_BATCH, CALLTYPE_SINGLE } from "erc7579/lib/ModeLib.sol";
+import {
+    ModeCode as ExecutionMode,
+    ExecType,
+    CallType,
+    CALLTYPE_BATCH,
+    CALLTYPE_SINGLE
+} from "erc7579/lib/ModeLib.sol";
 import { EncodeLib } from "contracts/lib/EncodeLib.sol";
 import { ExecutionLib as ExecutionLib } from "contracts/lib/ExecutionLib.sol";
 import { SmartSession } from "contracts/SmartSession.sol";
@@ -72,11 +78,7 @@ contract UserOperationBuilder is IUserOperationBuilder {
         // TODO: add delegatecall?
     }
 
-    function formatSignature(
-        address smartAccount,
-        PackedUserOperation calldata userOperation,
-        bytes calldata context
-    )
+    function formatSignature(address smartAccount, PackedUserOperation calldata userOperation, bytes calldata context)
         external
         view
         returns (bytes memory)
@@ -99,7 +101,7 @@ contract UserOperationBuilder is IUserOperationBuilder {
         Session memory session = enableData.sessionToEnable;
 
         bool isEnabled = true;
-        /*try IPermissionEnabled(permissionValidator).isPermissionFullyEnabled(
+        /* try IPermissionEnabled(permissionValidator).isPermissionFullyEnabled(
         permissionId, smartAccount, session.userOpPolicies, session.erc7739Policies.erc1271Policies, session.actions
         ) returns (bool isEnabled) {
             if (isEnabled) {
@@ -117,11 +119,9 @@ contract UserOperationBuilder is IUserOperationBuilder {
             if (!permissionValidator.areUserOpPoliciesEnabled(smartAccount, permissionId, session.userOpPolicies)) {
                 isEnabled = false;
             }
-            if (
-                !permissionValidator.areERC1271PoliciesEnabled(
+            if (!permissionValidator.areERC1271PoliciesEnabled(
                     smartAccount, permissionId, session.erc7739Policies.erc1271Policies
-                )
-            ) isEnabled = false;
+                )) isEnabled = false;
             if (!permissionValidator.areActionsEnabled(smartAccount, permissionId, session.actions)) isEnabled = false;
         }
         return isEnabled
@@ -129,7 +129,7 @@ contract UserOperationBuilder is IUserOperationBuilder {
             : EncodeLib.encodeUnsafeEnable(userOperation.signature, enableData);
     }
 
-    /* 
+    /*
     TODO: add formatERC1271Signature(
         address smartAccount,
         bytes calldata signature,

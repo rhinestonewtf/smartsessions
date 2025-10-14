@@ -23,10 +23,7 @@ library IntegrationEncodeLib {
         context = abi.encodePacked(nonceKey, mode, permissionId, abi.encode(enableData));
     }
 
-    function encodeHashesAndChainIds(
-        uint64[] memory chainIds,
-        bytes32[] memory hashes
-    )
+    function encodeHashesAndChainIds(uint64[] memory chainIds, bytes32[] memory hashes)
         internal
         pure
         returns (ChainDigest[] memory)

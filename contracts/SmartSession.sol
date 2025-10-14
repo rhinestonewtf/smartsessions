@@ -66,10 +66,7 @@ contract SmartSession is ISmartSession, SmartSessionBase, SmartSessionERC7739 {
      * @param userOpHash The hash of the user operation
      * @return vd ValidationData containing the validation result
      */
-    function validateUserOp(
-        PackedUserOperation calldata userOp,
-        bytes32 userOpHash
-    )
+    function validateUserOp(PackedUserOperation calldata userOp, bytes32 userOpHash)
         external
         override
         returns (ValidationData vd)
@@ -166,8 +163,7 @@ contract SmartSession is ISmartSession, SmartSessionBase, SmartSessionERC7739 {
 
         // Enable ERC1271 policies
         $enabledERC7739.enable({
-            contexts: enableData.sessionToEnable.erc7739Policies.allowedERC7739Content,
-            permissionId: permissionId
+            contexts: enableData.sessionToEnable.erc7739Policies.allowedERC7739Content, permissionId: permissionId
         });
 
         // Enabel ERC1271 policies
@@ -181,9 +177,7 @@ contract SmartSession is ISmartSession, SmartSessionBase, SmartSessionERC7739 {
 
         // Enable action policies
         $actionPolicies.enable({
-            permissionId: permissionId,
-            actionPolicyDatas: enableData.sessionToEnable.actions,
-            useRegistry: false
+            permissionId: permissionId, actionPolicyDatas: enableData.sessionToEnable.actions, useRegistry: false
         });
 
         _setPermit4337Paymaster(permissionId, enableData.sessionToEnable.permitERC4337Paymaster);
@@ -247,9 +241,9 @@ contract SmartSession is ISmartSession, SmartSessionBase, SmartSessionERC7739 {
                 if ($permitERC4337Paymaster[permissionId][account]) minPolicies = 1;
                 else revert PaymasterValidationNotEnabled(permissionId);
             }
-            /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-            /*                    Check UserOp Policies                   */
-            /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+            /* ´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+            /* Check UserOp Policies */
+            /* .•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
             // Check UserOp policies
             // This reverts if policies are violated
             vd = $userOpPolicies.check({
@@ -264,9 +258,9 @@ contract SmartSession is ISmartSession, SmartSessionBase, SmartSessionERC7739 {
 
         bytes4 selector = bytes4(userOp.callData[0:4]);
 
-        /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-        /*                      Handle Executions                     */
-        /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+        /* ´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+        /* Handle Executions */
+        /* .•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
         // if the selector indicates that the userOp is an execution,
         // action policies have to be checked
         if (selector == IERC7579Account.execute.selector) {
@@ -279,11 +273,12 @@ contract SmartSession is ISmartSession, SmartSessionBase, SmartSessionERC7739 {
             // DEFAULT EXEC & BATCH CALL
             else if (callType == CALLTYPE_BATCH) {
                 vd = vd.intersect(
-                    $actionPolicies.actionPolicies.checkBatch7579Exec({
-                        userOp: userOp,
-                        permissionId: permissionId,
-                        minPolicies: 1 // minimum of one actionPolicy must be set.
-                     })
+                    $actionPolicies.actionPolicies
+                        .checkBatch7579Exec({
+                            userOp: userOp,
+                            permissionId: permissionId,
+                            minPolicies: 1 // minimum of one actionPolicy must be set.
+                        })
                 );
             }
             // DEFAULT EXEC & SINGLE CALL
@@ -291,13 +286,14 @@ contract SmartSession is ISmartSession, SmartSessionBase, SmartSessionERC7739 {
                 (address target, uint256 value, bytes calldata callData) =
                     userOp.callData.decodeUserOpCallData().decodeSingle();
                 vd = vd.intersect(
-                    $actionPolicies.actionPolicies.checkSingle7579Exec({
-                        permissionId: permissionId,
-                        target: target,
-                        value: value,
-                        callData: callData,
-                        minPolicies: 1 // minimum of one actionPolicy must be set.
-                     })
+                    $actionPolicies.actionPolicies
+                        .checkSingle7579Exec({
+                            permissionId: permissionId,
+                            target: target,
+                            value: value,
+                            callData: callData,
+                            minPolicies: 1 // minimum of one actionPolicy must be set.
+                        })
                 );
             }
             // DelegateCalls are not supported by SmartSession
@@ -311,15 +307,16 @@ contract SmartSession is ISmartSession, SmartSessionBase, SmartSessionERC7739 {
         else if (selector == IAccountExecute.executeUserOp.selector) {
             revert UnsupportedExecutionType();
         }
-        /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-        /*                        Handle Actions                      */
-        /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+        /* ´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+        /* Handle Actions */
+        /* .•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
         // all other executions are supported and are handled by the actionPolicies
         else {
             ActionId actionId = account.toActionId(bytes4(userOp.callData[:4]));
 
             vd = vd.intersect(
-                $actionPolicies.actionPolicies[actionId].check({
+                $actionPolicies.actionPolicies[actionId]
+                .check({
                     permissionId: permissionId,
                     callOnIPolicy: abi.encodeCall(
                         IActionPolicy.checkAction,
@@ -332,20 +329,17 @@ contract SmartSession is ISmartSession, SmartSessionBase, SmartSessionERC7739 {
                         )
                     ),
                     minPolicies: 1 // minimum of one actionPolicy must be set.
-                 })
+                })
             );
         }
 
-        /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-        /*                 Check SessionKey ISessionValidator         */
-        /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+        /* ´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+        /* Check SessionKey ISessionValidator */
+        /* .•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
         // perform signature check with ISessionValidator
         // this function will revert if no ISessionValidator is set for this permissionId
         bool validSig = $sessionValidators.isValidISessionValidator({
-            hash: userOpHash,
-            account: account,
-            permissionId: permissionId,
-            signature: decompressedSignature
+            hash: userOpHash, account: account, permissionId: permissionId, signature: decompressedSignature
         });
 
         // if the ISessionValidator signature is invalid, the userOp is invalid
@@ -372,11 +366,7 @@ contract SmartSession is ISmartSession, SmartSessionBase, SmartSessionERC7739 {
      *                                    contentsType,
      *                                    uint16(contentsType.length))
      */
-    function isValidSignatureWithSender(
-        address sender,
-        bytes32 hash,
-        bytes calldata signature
-    )
+    function isValidSignatureWithSender(address sender, bytes32 hash, bytes calldata signature)
         external
         view
         override
@@ -452,10 +442,7 @@ contract SmartSession is ISmartSession, SmartSessionBase, SmartSessionERC7739 {
         if (!valid) return valid;
         // this call reverts if the ISessionValidator is not set
         return $sessionValidators.isValidISessionValidator({
-            hash: hash,
-            account: msg.sender,
-            permissionId: permissionId,
-            signature: signature
+            hash: hash, account: msg.sender, permissionId: permissionId, signature: signature
         });
     }
 }

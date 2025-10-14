@@ -35,7 +35,8 @@ contract SimpleGasPolicy is IUserOpPolicy {
         GasLimitConfig storage config = gasLimitConfigs[id][msg.sender][userOp.sender];
         require(config.gasLimit > 0, PolicyNotInitialized(id, msg.sender, userOp.sender));
 
-        uint256 totalUserOpGasLimit = UserOperationLib.unpackVerificationGasLimit(userOp) // validation gas limit
+        uint256 totalUserOpGasLimit =
+            UserOperationLib.unpackVerificationGasLimit(userOp) // validation gas limit
             + UserOperationLib.unpackCallGasLimit(userOp) // call gas limit
             + userOp.preVerificationGas; // pre verification gas
 
@@ -95,11 +96,7 @@ contract SimpleGasPolicy is IUserOpPolicy {
      * @return costLimit The cost limit.
      * @return costUsed The cost used.
      */
-    function getGasConfig(
-        ConfigId configId,
-        address multiplexer,
-        address userOpSender
-    )
+    function getGasConfig(ConfigId configId, address multiplexer, address userOpSender)
         external
         view
         returns (uint128 gasLimit, uint128 gasUsed, uint128 costLimit, uint128 costUsed)

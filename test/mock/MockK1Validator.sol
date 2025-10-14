@@ -18,29 +18,24 @@ contract MockK1Validator is IValidator {
     bytes4 constant ERC1271_INVALID = 0xffffffff;
     mapping(address => address) public smartAccountOwners;
 
-    function validateUserOp(
-        PackedUserOperation calldata userOp,
-        bytes32 userOpHash
-    )
+    function validateUserOp(PackedUserOperation calldata userOp, bytes32 userOpHash)
         external
         view
         returns (uint256 validation)
     {
         return ECDSA.recover(MessageHashUtils.toEthSignedMessageHash(userOpHash), userOp.signature)
-            == smartAccountOwners[msg.sender] ? VALIDATION_SUCCESS : VALIDATION_FAILED;
+                == smartAccountOwners[msg.sender]
+            ? VALIDATION_SUCCESS
+            : VALIDATION_FAILED;
     }
 
-    function isValidSignatureWithSender(
-        address,
-        bytes32 hash,
-        bytes calldata signature
-    )
+    function isValidSignatureWithSender(address, bytes32 hash, bytes calldata signature)
         external
         view
         returns (bytes4)
     {
         address owner = smartAccountOwners[msg.sender];
-        //console2.log("expecting owner", owner);
+        // console2.log("expecting owner", owner);
 
         return ECDSA.recover(MessageHashUtils.toEthSignedMessageHash(hash), signature) == smartAccountOwners[msg.sender]
             ? EIP1271_MAGIC_VALUE

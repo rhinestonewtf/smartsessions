@@ -19,10 +19,7 @@ library IdLib {
         actionId = ActionId.wrap(keccak256(abi.encodePacked(target, functionSelector)));
     }
 
-    function toActionPolicyId(
-        PermissionId permissionId,
-        ActionId actionId
-    )
+    function toActionPolicyId(PermissionId permissionId, ActionId actionId)
         internal
         pure
         returns (ActionPolicyId policyId)
@@ -42,11 +39,7 @@ library IdLib {
         _id = ConfigId.wrap(keccak256(abi.encodePacked(account, actionPolicyId)));
     }
 
-    function toConfigId(
-        PermissionId permissionId,
-        ActionId actionId,
-        address account
-    )
+    function toConfigId(PermissionId permissionId, ActionId actionId, address account)
         internal
         pure
         returns (ConfigId _id)

@@ -22,11 +22,7 @@ contract YesSessionValidator is ISessionValidator {
         return true;
     }
 
-    function validateSignatureWithData(
-        bytes32 hash,
-        bytes calldata sig,
-        bytes calldata data
-    )
+    function validateSignatureWithData(bytes32 hash, bytes calldata sig, bytes calldata data)
         external
         view
         override

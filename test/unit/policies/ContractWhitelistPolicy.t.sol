@@ -42,7 +42,7 @@ contract ContractWhitelistPolicyTest is PolicyTestBase {
 
     function test_contractWhitelist_policy_init_reinit_use() public {
         PermissionId permissionId = use_contractWhitelist_policy_success();
-        //permissionId = use_contractWhitelist_policy_fail(permissionId);
+        // permissionId = use_contractWhitelist_policy_fail(permissionId);
         reinit_contractWhitelist_policy(permissionId);
     }
 
@@ -95,9 +95,7 @@ contract ContractWhitelistPolicyTest is PolicyTestBase {
         for (uint256 i; i < targets.length; i++) {
             isWhitelisted = contractWhitelistPolicy.isContractWhitelisted(
                 IdLib.toConfigId({
-                    permissionId: permissionIdReInited,
-                    actionId: FALLBACK_ACTIONID,
-                    account: instance.account
+                    permissionId: permissionIdReInited, actionId: FALLBACK_ACTIONID, account: instance.account
                 }),
                 address(smartSession),
                 instance.account,
@@ -107,7 +105,7 @@ contract ContractWhitelistPolicyTest is PolicyTestBase {
         }
     }
 
-    //test as action policy
+    // test as action policy
     function test_use_contractWhitelist_policy_as_Fallback_policy_success(uint256 seed)
         public
         returns (PermissionId permissionId)
@@ -120,10 +118,7 @@ contract ContractWhitelistPolicyTest is PolicyTestBase {
             address currentTarget = targets[i];
             bytes memory callData = abi.encodeWithSelector(randomSelector);
             UserOpData memory userOpData = instance.getExecOps({
-                target: currentTarget,
-                value: 0,
-                callData: callData,
-                txValidator: address(smartSession)
+                target: currentTarget, value: 0, callData: callData, txValidator: address(smartSession)
             });
             userOpData.userOp.signature =
                 EncodeLib.encodeUse({ permissionId: permissionId_contractWhitelistAction, sig: hex"4141414141" });
@@ -140,10 +135,7 @@ contract ContractWhitelistPolicyTest is PolicyTestBase {
 
         bytes memory callData = abi.encodeCall(MockTarget.setValue, (valueToSet));
         UserOpData memory userOpData = instance.getExecOps({
-            target: noWhitelistedTarget,
-            value: 0,
-            callData: callData,
-            txValidator: address(smartSession)
+            target: noWhitelistedTarget, value: 0, callData: callData, txValidator: address(smartSession)
         });
         userOpData.userOp.signature =
             EncodeLib.encodeUse({ permissionId: permissionId_contractWhitelistAction, sig: hex"4141414141" });

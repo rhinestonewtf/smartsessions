@@ -88,9 +88,7 @@ contract BaseTest is RhinestoneModuleKit, Test {
         usageLimitPolicy = new UsageLimitPolicy();
 
         instance.installModule({
-            moduleTypeId: MODULE_TYPE_VALIDATOR,
-            module: address(mockK1),
-            data: abi.encodePacked(owner.addr)
+            moduleTypeId: MODULE_TYPE_VALIDATOR, module: address(mockK1), data: abi.encodePacked(owner.addr)
         });
 
         instance.installModule({ moduleTypeId: MODULE_TYPE_VALIDATOR, module: address(smartSession), data: "" });
@@ -131,11 +129,7 @@ contract BaseTest is RhinestoneModuleKit, Test {
         console2.logBytes32(_MULTICHAIN_DOMAIN_SEPARATOR);
     }
 
-    function _getEmptyActionData(
-        address actionTarget,
-        bytes4 actionSelector,
-        address policyContract
-    )
+    function _getEmptyActionData(address actionTarget, bytes4 actionSelector, address policyContract)
         internal
         pure
         returns (ActionData memory)
@@ -147,11 +141,7 @@ contract BaseTest is RhinestoneModuleKit, Test {
         });
     }
 
-    function _getEmptyActionDatas(
-        address actionTarget,
-        bytes4 actionSelector,
-        address policyContract
-    )
+    function _getEmptyActionDatas(address actionTarget, bytes4 actionSelector, address policyContract)
         internal
         pure
         returns (ActionData[] memory actionDatas)
@@ -160,10 +150,7 @@ contract BaseTest is RhinestoneModuleKit, Test {
         actionDatas[0] = _getEmptyActionData(actionTarget, actionSelector, policyContract);
     }
 
-    function _getEmptyERC7739Data(
-        string memory content,
-        PolicyData[] memory erc1271Policies
-    )
+    function _getEmptyERC7739Data(string memory content, PolicyData[] memory erc1271Policies)
         internal
         returns (ERC7739Data memory)
     {
@@ -191,10 +178,7 @@ contract BaseTest is RhinestoneModuleKit, Test {
         returns (EnableSession memory enableData)
     {
         bytes32 sessionDigest = smartSession.getSessionDigest({
-            permissionId: permissionId,
-            account: instance.account,
-            data: session,
-            mode: mode
+            permissionId: permissionId, account: instance.account, data: session, mode: mode
         });
 
         ChainDigest[] memory chainDigests = IntegrationEncodeLib.encodeHashesAndChainIds(
@@ -203,10 +187,7 @@ contract BaseTest is RhinestoneModuleKit, Test {
         );
 
         enableData = EnableSession({
-            chainDigestIndex: 1,
-            hashesAndChainIds: chainDigests,
-            sessionToEnable: session,
-            permissionEnableSig: ""
+            chainDigestIndex: 1, hashesAndChainIds: chainDigests, sessionToEnable: session, permissionEnableSig: ""
         });
     }
 

@@ -42,13 +42,7 @@ contract TimeFramePolicy is IPolicy, IUserOpPolicy, IActionPolicy, I1271Policy {
      * @param id The config ID.
      * @param account The account.
      */
-    function checkAction(
-        ConfigId id,
-        address account,
-        address,
-        uint256,
-        bytes calldata
-    )
+    function checkAction(ConfigId id, address account, address, uint256, bytes calldata)
         external
         view
         returns (uint256)
@@ -61,13 +55,7 @@ contract TimeFramePolicy is IPolicy, IUserOpPolicy, IActionPolicy, I1271Policy {
      * @param id The config ID.
      * @param smartAccount The account.
      */
-    function check1271SignedAction(
-        ConfigId id,
-        address,
-        address smartAccount,
-        bytes32,
-        bytes calldata
-    )
+    function check1271SignedAction(ConfigId id, address, address smartAccount, bytes32, bytes calldata)
         external
         view
         returns (bool)
@@ -106,7 +94,7 @@ contract TimeFramePolicy is IPolicy, IUserOpPolicy, IActionPolicy, I1271Policy {
      */
     function initializeWithMultiplexer(address account, ConfigId configId, bytes calldata initData) external {
         TimeFrameConfig config = TimeFrameConfig.wrap(uint256(uint96(bytes12(initData[0:12]))));
-        // Revert  if validUntil is 0 and validAfter is greater than validUntil
+        // Revert if validUntil is 0 and validAfter is greater than validUntil
         require(
             config.validUntil() == 0 || config.validAfter() <= config.validUntil(),
             PolicyNotInitialized(configId, msg.sender, account)
@@ -122,11 +110,7 @@ contract TimeFramePolicy is IPolicy, IUserOpPolicy, IActionPolicy, I1271Policy {
      * @param smartAccount The smart account.
      * @return The time frame config.
      */
-    function getTimeFrameConfig(
-        ConfigId id,
-        address multiplexer,
-        address smartAccount
-    )
+    function getTimeFrameConfig(ConfigId id, address multiplexer, address smartAccount)
         external
         view
         returns (TimeFrameConfig)
@@ -140,11 +124,9 @@ contract TimeFramePolicy is IPolicy, IUserOpPolicy, IActionPolicy, I1271Policy {
      * @return True if the interface is supported, false otherwise.
      */
     function supportsInterface(bytes4 interfaceID) external pure override returns (bool) {
-        return (
-            interfaceID == type(IERC165).interfaceId || interfaceID == type(IPolicy).interfaceId
+        return (interfaceID == type(IERC165).interfaceId || interfaceID == type(IPolicy).interfaceId
                 || interfaceID == type(IActionPolicy).interfaceId || interfaceID == type(I1271Policy).interfaceId
-                || interfaceID == type(IUserOpPolicy).interfaceId
-        );
+                || interfaceID == type(IUserOpPolicy).interfaceId);
     }
 }
 

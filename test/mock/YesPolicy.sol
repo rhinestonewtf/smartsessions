@@ -22,13 +22,7 @@ contract YesPolicy is IUserOpPolicy, IActionPolicy, I1271Policy {
         return 0;
     }
 
-    function checkAction(
-        ConfigId id,
-        address account,
-        address target,
-        uint256 value,
-        bytes calldata data
-    )
+    function checkAction(ConfigId id, address account, address target, uint256 value, bytes calldata data)
         external
         override
         returns (uint256)

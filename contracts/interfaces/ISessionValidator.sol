@@ -16,11 +16,7 @@ import { IModule } from "erc7579/interfaces/IERC7579Module.sol";
  *  data the config data that is used to validate the signature
  */
 interface ISessionValidator is IModule {
-    function validateSignatureWithData(
-        bytes32 hash,
-        bytes calldata sig,
-        bytes calldata data
-    )
+    function validateSignatureWithData(bytes32 hash, bytes calldata sig, bytes calldata data)
         external
         view
         returns (bool validSig);

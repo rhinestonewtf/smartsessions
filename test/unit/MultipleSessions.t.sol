@@ -15,12 +15,7 @@ contract MultipleSessionsTest is BaseTest {
         super.setUp();
     }
 
-    function _makeSession(
-        address target,
-        bytes4 selector,
-        bytes32 salt,
-        uint256 setValue
-    )
+    function _makeSession(address target, bytes4 selector, bytes32 salt, uint256 setValue)
         public
         returns (PermissionId permissionId)
     {

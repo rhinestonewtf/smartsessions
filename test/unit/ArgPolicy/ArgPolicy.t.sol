@@ -32,13 +32,7 @@ contract ArgPolicyUnitTest is BaseTest {
         return abi.encodePacked(selector, abi.encode(VALUE_100, VALUE_200));
     }
 
-    function createSimpleRule(
-        ParamCondition condition,
-        uint64 offset,
-        bytes32 ref,
-        bool isLimited,
-        uint256 limitValue
-    )
+    function createSimpleRule(ParamCondition condition, uint64 offset, bytes32 ref, bool isLimited, uint256 limitValue)
         internal
         pure
         returns (ParamRule memory)
@@ -66,10 +60,7 @@ contract ArgPolicyUnitTest is BaseTest {
         return config;
     }
 
-    function createSimpleExpressionTree(
-        ActionConfig memory config,
-        ParamRule memory rule
-    )
+    function createSimpleExpressionTree(ActionConfig memory config, ParamRule memory rule)
         internal
         pure
         returns (ActionConfig memory)
@@ -86,10 +77,7 @@ contract ArgPolicyUnitTest is BaseTest {
         return config;
     }
 
-    function createComplexExpressionTree(
-        ActionConfig memory config,
-        ParamRule[] memory rules
-    )
+    function createComplexExpressionTree(ActionConfig memory config, ParamRule[] memory rules)
         internal
         pure
         returns (ActionConfig memory)
@@ -120,7 +108,7 @@ contract ArgPolicyUnitTest is BaseTest {
         policy = new ArgPolicy();
     }
 
-    /*//////////////////////////////////////////////////////////////
+    /* //////////////////////////////////////////////////////////////
                             INTERFACE SUPPORT
     //////////////////////////////////////////////////////////////*/
 
@@ -131,7 +119,7 @@ contract ArgPolicyUnitTest is BaseTest {
         assertFalse(policy.supportsInterface(bytes4(keccak256("unknown"))), "Should not support unknown interface");
     }
 
-    /*//////////////////////////////////////////////////////////////
+    /* //////////////////////////////////////////////////////////////
                             INITIALIZATION
     //////////////////////////////////////////////////////////////*/
 
@@ -191,7 +179,7 @@ contract ArgPolicyUnitTest is BaseTest {
         policy.initializeWithMultiplexer(ACCOUNT, TEST_CONFIG_ID, initData);
     }
 
-    /*//////////////////////////////////////////////////////////////
+    /* //////////////////////////////////////////////////////////////
                              CHECK ACTION
     //////////////////////////////////////////////////////////////*/
 

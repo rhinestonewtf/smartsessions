@@ -29,9 +29,8 @@ library PolicyLib {
      * To prevent Policies from returning a packed aggregator value, we use this bitmask.
      */
     function isFailed(ValidationData packedData) internal pure returns (bool sigFailed) {
-        sigFailed = (
-            ValidationData.unwrap(packedData) & 0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffff
-        ) != 0;
+        sigFailed = (ValidationData.unwrap(packedData)
+                    & 0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffff) != 0;
     }
 
     /**
@@ -50,12 +49,7 @@ library PolicyLib {
      *
      * @return vd The intersected ValidationData result from all policy checks.
      */
-    function check(
-        Policy storage $self,
-        PermissionId permissionId,
-        bytes memory callOnIPolicy,
-        uint256 minPolicies
-    )
+    function check(Policy storage $self, PermissionId permissionId, bytes memory callOnIPolicy, uint256 minPolicies)
         internal
         returns (ValidationData vd)
     {
@@ -91,12 +85,7 @@ library PolicyLib {
      * that the Policy fallback procedure SHOULD be used
      *             - Intersected Validation data of policies.
      */
-    function tryCheck(
-        Policy storage $self,
-        PermissionId permissionId,
-        bytes memory callOnIPolicy,
-        uint256 minPolicies
-    )
+    function tryCheck(Policy storage $self, PermissionId permissionId, bytes memory callOnIPolicy, uint256 minPolicies)
         internal
         returns (ValidationData vd)
     {
@@ -123,11 +112,7 @@ library PolicyLib {
         if (vd == RETRY_WITH_FALLBACK) revert ISmartSession.ForbiddenValidationData();
     }
 
-    function callPolicy(
-        address policy,
-        PermissionId permissionId,
-        bytes memory callOnIPolicy
-    )
+    function callPolicy(address policy, PermissionId permissionId, bytes memory callOnIPolicy)
         internal
         returns (ValidationData _vd)
     {
@@ -144,7 +129,7 @@ library PolicyLib {
         });
         uint256 validationDataFromPolicy;
         assembly {
-            //if (!success) revert PolicyCheckReverted(bytes32);
+            // if (!success) revert PolicyCheckReverted(bytes32);
             if iszero(success) {
                 mstore(0, 0xf4270752) // `PolicyCheckReverted(bytes32)`
                 mstore(0x20, mload(add(returnDataFromPolicy, 0x20)))
@@ -214,7 +199,8 @@ library PolicyLib {
             // Generate the action ID based on the target and function selector
             actionId = target.toActionId(targetSig);
             // Check the relevant action policy
-            vd = $policies[actionId].tryCheck({
+            vd = $policies[actionId]
+            .tryCheck({
                 permissionId: permissionId,
                 callOnIPolicy: abi.encodeCall(
                     IActionPolicy.checkAction, (permissionId.toConfigId(actionId), msg.sender, target, value, callData)
@@ -230,7 +216,8 @@ library PolicyLib {
         // call the fallback policy for either FALLBACK_ACTIONID or FALLBACK_ACTIONID_SMARTSESSION_CALL
         // If no policies were configured for FALLBACK_ACTIONID or FALLBACK_ACTIONID_SMARTSESSION_CALL this call will
         // revert
-        vd = $policies[actionId].check({
+        vd = $policies[actionId]
+        .check({
             permissionId: permissionId,
             callOnIPolicy: abi.encodeCall(
                 IActionPolicy.checkAction, (permissionId.toConfigId(actionId), msg.sender, target, value, callData)
@@ -325,13 +312,10 @@ library PolicyLib {
 
         // iterate over all policies and intersect the validation data
         for (uint256 i; i < length; i++) {
-            valid = I1271Policy(policies[i]).check1271SignedAction({
-                id: configId,
-                requestSender: requestSender,
-                account: account,
-                hash: hash,
-                signature: signature
-            });
+            valid = I1271Policy(policies[i])
+                .check1271SignedAction({
+                    id: configId, requestSender: requestSender, account: account, hash: hash, signature: signature
+                });
             // If any policy check fails, return false immediately
             if (!valid) return valid;
         }

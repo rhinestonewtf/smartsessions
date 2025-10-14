@@ -15,7 +15,7 @@ library EncodeLib {
 
     function getSender(PackedUserOperation calldata userOp) internal pure returns (address) {
         address data;
-        //read sender from userOp, which is first userOp member (saves 800 gas...)
+        // read sender from userOp, which is first userOp member (saves 800 gas...)
         assembly {
             data := calldataload(userOp)
         }
@@ -40,10 +40,7 @@ library EncodeLib {
         userOpSig = abi.encodePacked(SmartSessionMode.USE, permissionId, sig);
     }
 
-    function encodeUnsafeEnable(
-        bytes memory sig,
-        EnableSession memory enableData
-    )
+    function encodeUnsafeEnable(bytes memory sig, EnableSession memory enableData)
         internal
         pure
         returns (bytes memory packedSig)

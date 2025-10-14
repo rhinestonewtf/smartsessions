@@ -67,7 +67,7 @@ contract SudoAndStrictPermissionTest is BaseTest {
             sessionValidatorInitData: "mockInitData",
             userOpPolicies: _getEmptyPolicyDatas(address(yesPolicy)),
             erc7739Policies: _getEmptyERC7739Data("0", new PolicyData[](0)),
-            //actions: actionDatas
+            // actions: actionDatas
             actions: new ActionData[](0),
             permitERC4337Paymaster: true
         });

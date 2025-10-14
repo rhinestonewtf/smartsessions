@@ -35,8 +35,7 @@ contract SpendingLimitTest is BaseTest {
 
         PolicyData[] memory policyDatas = new PolicyData[](1);
         policyDatas[0] = PolicyData({
-            policy: address(spendingLimit),
-            initData: abi.encode(spendingLimitTokens, spendingLimitLimits)
+            policy: address(spendingLimit), initData: abi.encode(spendingLimitTokens, spendingLimitLimits)
         });
 
         ActionData[] memory actionDatas = new ActionData[](1);

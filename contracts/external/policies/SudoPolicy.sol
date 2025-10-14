@@ -15,13 +15,13 @@ contract SudoPolicy is IUserOpPolicy, IActionPolicy, I1271Policy {
      * A secure policy would minimize external calls from this method (ideally, to 0) to prevent passing control flow to
      * external contracts.
      */
-    function initializeWithMultiplexer(address account, ConfigId configId, bytes calldata /*initData*/ ) external {
+    function initializeWithMultiplexer(address account, ConfigId configId, bytes calldata /* initData*/) external {
         emit IPolicy.PolicySet(configId, msg.sender, account);
     }
 
     function checkUserOpPolicy(
-        ConfigId, /*id*/
-        PackedUserOperation calldata /*userOp*/
+        ConfigId, /* id*/
+        PackedUserOperation calldata /* userOp*/
     )
         external
         pure
@@ -31,11 +31,11 @@ contract SudoPolicy is IUserOpPolicy, IActionPolicy, I1271Policy {
     }
 
     function checkAction(
-        ConfigId, /*id*/
-        address, /*account*/
-        address, /*target*/
-        uint256, /*value*/
-        bytes calldata /*data*/
+        ConfigId, /* id*/
+        address, /* account*/
+        address, /* target*/
+        uint256, /* value*/
+        bytes calldata /* data*/
     )
         external
         pure

@@ -5,11 +5,7 @@ import "@ERC4337/account-abstraction/contracts/interfaces/IEntryPoint.sol";
 contract MockPaymaster is BasePaymaster {
     constructor(IEntryPoint _entryPoint) BasePaymaster(_entryPoint) { }
 
-    function _validatePaymasterUserOp(
-        PackedUserOperation calldata userOp,
-        bytes32 userOpHash,
-        uint256 maxCost
-    )
+    function _validatePaymasterUserOp(PackedUserOperation calldata userOp, bytes32 userOpHash, uint256 maxCost)
         internal
         virtual
         override

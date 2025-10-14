@@ -11,16 +11,16 @@ contract SmartSessionCompatibilityFallback is ERC7579FallbackBase {
 
     mapping(address smartAccount => bool isInitialized) public isInitialized;
 
-    function onInstall(bytes calldata /*data*/ ) external override {
+    function onInstall(bytes calldata /* data*/) external override {
         isInitialized[msg.sender] = true;
     }
 
-    function onUninstall(bytes calldata /*data*/ ) external override {
+    function onUninstall(bytes calldata /* data*/) external override {
         isInitialized[msg.sender] = false;
     }
 
     function isModuleType(uint256 typeID) external pure override returns (bool) {
-        // if SmartSessions is to be used as a ERC1271/ERC7739 validator module, the account has to implement  function
+        // if SmartSessions is to be used as a ERC1271/ERC7739 validator module, the account has to implement function
         // supportsNestedTypedDataSign() public view virtual returns (bytes32 result)
         // this can be achieved by adding this function selector in your 7579 account as a fallback handler
         // YOU MUST NOT add any of the write functions via 7579 fallback selector
@@ -56,7 +56,7 @@ contract SmartSessionCompatibilityFallback is ERC7579FallbackBase {
         // follows "vendorname.accountname.semver" structure as per ERC-7579
         string memory accountId = IERC7579Account(msg.sender).accountId();
 
-        //parse name from accountId
+        // parse name from accountId
         (name, version) = accountId.parseAccountId();
 
         chainId = block.chainid;

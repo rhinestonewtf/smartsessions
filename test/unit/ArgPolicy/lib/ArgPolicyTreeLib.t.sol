@@ -147,10 +147,7 @@ contract StorageAccessHelper {
         );
     }
 
-    function getRule(
-        bytes32 configSlot,
-        uint8 ruleIndex
-    )
+    function getRule(bytes32 configSlot, uint8 ruleIndex)
         public
         view
         returns (uint8 condition, uint64 offset, bool isLimited, bytes32 ref, uint256 limit, uint256 used)
@@ -164,10 +161,7 @@ contract StorageAccessHelper {
         return (uint8(rule.condition), rule.offset, rule.isLimited, rule.ref, rule.usage.limit, rule.usage.used);
     }
 
-    function getNode(
-        bytes32 configSlot,
-        uint8 nodeIndex
-    )
+    function getNode(bytes32 configSlot, uint8 nodeIndex)
         public
         view
         returns (uint8 nodeType, uint8 ruleIndex, uint8 leftChild, uint8 rightChild)
@@ -188,13 +182,13 @@ contract StorageAccessHelper {
 }
 
 contract ArgPolicyTreeLibUnitTest is BaseTest {
-    /*//////////////////////////////////////////////////////////////
+    /* //////////////////////////////////////////////////////////////
                                LIBRARIES
     //////////////////////////////////////////////////////////////*/
 
     using ArgPolicyTreeLib for *;
 
-    /*//////////////////////////////////////////////////////////////
+    /* //////////////////////////////////////////////////////////////
                                TEST STORAGE
     //////////////////////////////////////////////////////////////*/
 
@@ -207,7 +201,7 @@ contract ArgPolicyTreeLibUnitTest is BaseTest {
     uint256 constant VALUE_200 = 200;
     address constant SAMPLE_ADDRESS = address(0x1234567890123456789012345678901234567890);
 
-    /*//////////////////////////////////////////////////////////////
+    /* //////////////////////////////////////////////////////////////
                                  SETUP
     //////////////////////////////////////////////////////////////*/
 
@@ -223,7 +217,7 @@ contract ArgPolicyTreeLibUnitTest is BaseTest {
         testStorageSlot = keccak256(abi.encodePacked("test.storage.slot", block.timestamp));
     }
 
-    /*//////////////////////////////////////////////////////////////
+    /* //////////////////////////////////////////////////////////////
                              HELPER FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
@@ -272,7 +266,7 @@ contract ArgPolicyTreeLibUnitTest is BaseTest {
         config.paramRules.rules[ruleIndex] = rule;
     }
 
-    /*//////////////////////////////////////////////////////////////
+    /* //////////////////////////////////////////////////////////////
                               NODE CREATION
     //////////////////////////////////////////////////////////////*/
 
@@ -328,7 +322,7 @@ contract ArgPolicyTreeLibUnitTest is BaseTest {
         assertEq(ArgPolicyTreeLib.getRightChildIndex(node), rightChildIndex, "Right child index should match");
     }
 
-    /*//////////////////////////////////////////////////////////////
+    /* //////////////////////////////////////////////////////////////
                                 VALIDATION
     //////////////////////////////////////////////////////////////*/
 
@@ -414,7 +408,7 @@ contract ArgPolicyTreeLibUnitTest is BaseTest {
         helper.validateTree(0);
     }
 
-    /*//////////////////////////////////////////////////////////////
+    /* //////////////////////////////////////////////////////////////
                                 FILL TESTS
     //////////////////////////////////////////////////////////////*/
 
@@ -574,7 +568,7 @@ contract ArgPolicyTreeLibUnitTest is BaseTest {
         assertEq(nodeType0, ArgPolicyTreeLib.NODE_TYPE_NOT, "Node 0 type should be updated");
     }
 
-    /*//////////////////////////////////////////////////////////////
+    /* //////////////////////////////////////////////////////////////
                              GETTER FUNCTIONS TESTS
     //////////////////////////////////////////////////////////////*/
 

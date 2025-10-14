@@ -57,7 +57,7 @@ contract ValueLimitPolicyTest is PolicyTestBase {
         public
         returns (PermissionId)
     {
-        //re-initialize
+        // re-initialize
         PermissionId permissionIdReInited =
             _enableUserOpSession(address(valueLimitPolicy), valueLimitPolicyInitData, instance, keccak256("salt"));
         // use

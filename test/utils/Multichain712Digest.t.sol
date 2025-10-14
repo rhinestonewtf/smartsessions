@@ -51,10 +51,7 @@ contract Multichain712DigestTest is BaseTest {
 
             // that's how signTypedData will be hashing
             bytes32 digest = session._sessionDigest({
-                account: accounts[i],
-                smartSession: smartSessions[i],
-                mode: modes[i],
-                nonce: nonces[i]
+                account: accounts[i], smartSession: smartSessions[i], mode: modes[i], nonce: nonces[i]
             });
             ChainDigest memory chainDigest = ChainDigest({ chainId: chainIds[i], sessionDigest: digest });
             hashesAndChainIds[i] = chainDigest;

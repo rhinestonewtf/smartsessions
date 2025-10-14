@@ -46,8 +46,7 @@ contract SudoPolicyAndActionPolicyTest is BaseTest {
         // Create action data for transfer with spending limit policy (token1 only)
         PolicyData[] memory transferPolicyDatas = new PolicyData[](1);
         transferPolicyDatas[0] = PolicyData({
-            policy: address(spendingLimit),
-            initData: abi.encode(spendingLimitTokens, spendingLimitLimits)
+            policy: address(spendingLimit), initData: abi.encode(spendingLimitTokens, spendingLimitLimits)
         });
 
         ActionData[] memory actionDatas = new ActionData[](3);

@@ -42,13 +42,7 @@ library ConfigLib {
     /**
      * Helper function that ensures that the provided permission ID is enabled for the calling account.
      */
-    function requirePermissionIdEnabled(
-        EnumerableSet.Bytes32Set storage set,
-        PermissionId permissionId
-    )
-        internal
-        view
-    {
+    function requirePermissionIdEnabled(EnumerableSet.Bytes32Set storage set, PermissionId permissionId) internal view {
         if (!set.contains(msg.sender, PermissionId.unwrap(permissionId))) {
             revert ISmartSession.InvalidPermissionId(permissionId);
         }
@@ -87,19 +81,18 @@ library ConfigLib {
 
             // this will revert if the policy is not attested to
             // if (useRegistry) {
-            //     registry.checkForAccount({ smartAccount: msg.sender, module: policy });
-            // }
+            // registry.checkForAccount({ smartAccount: msg.sender, module: policy });
+            //}
 
             // Add the policy to the list for the given permission and smart account
             $policy.policyList[permissionId].add({ account: msg.sender, value: policy });
 
             // Initialize the policy with the provided configuration
             // overwrites the config
-            IPolicy(policy).initializeWithMultiplexer({
-                account: msg.sender,
-                configId: configId,
-                initData: policyDatas[i].initData
-            });
+            IPolicy(policy)
+                .initializeWithMultiplexer({
+                    account: msg.sender, configId: configId, initData: policyDatas[i].initData
+                });
 
             emit ISmartSession.PolicyEnabled(permissionId, policyType, policy, msg.sender);
         }
@@ -124,7 +117,9 @@ library ConfigLib {
     )
         internal
     {
-        if (permissionId == EMPTY_PERMISSIONID) revert ISmartSession.InvalidPermissionId(permissionId);
+        if (permissionId == EMPTY_PERMISSIONID) {
+            revert ISmartSession.InvalidPermissionId(permissionId);
+        }
         uint256 length = actionPolicyDatas.length;
         for (uint256 i; i < length; i++) {
             // record every enabled actionId
@@ -143,7 +138,8 @@ library ConfigLib {
             }
 
             // Record the enabled action ID
-            $self.actionPolicies[actionId].enable({
+            $self.actionPolicies[actionId]
+            .enable({
                 policyType: PolicyType.ACTION,
                 permissionId: permissionId,
                 configId: permissionId.toConfigId(actionId),
@@ -195,8 +191,9 @@ library ConfigLib {
      * @param sessionValidatorConfig The configuration data for the session validator
      */
     function enable(
-        mapping(PermissionId permissionId => mapping(address smartAccount => SignerConf conf)) storage
-            $sessionValidators,
+        mapping(
+            PermissionId permissionId => mapping(address smartAccount => SignerConf conf)
+        ) storage $sessionValidators,
         PermissionId permissionId,
         ISessionValidator sessionValidator,
         bytes memory sessionValidatorConfig,
@@ -214,12 +211,12 @@ library ConfigLib {
 
         // // this will revert if the policy is not attested to
         // if (useRegistry) {
-        //     registry.checkForAccount({
-        //         smartAccount: msg.sender,
-        //         module: address(sessionValidator),
-        //         moduleType: ModuleType.wrap(ERC7579_MODULE_TYPE_STATELESS_VALIDATOR)
-        //     });
-        // }
+        // registry.checkForAccount({
+        // smartAccount: msg.sender,
+        // module: address(sessionValidator),
+        // moduleType: ModuleType.wrap(ERC7579_MODULE_TYPE_STATELESS_VALIDATOR)
+        // });
+        //}
 
         // Get the storage reference for the signer configuration
         SignerConf storage $conf = $sessionValidators[permissionId][msg.sender];
@@ -263,8 +260,9 @@ library ConfigLib {
     }
 
     function disable(
-        mapping(PermissionId permissionId => mapping(address smartAccount => SignerConf conf)) storage
-            $sessionValidators,
+        mapping(
+            PermissionId permissionId => mapping(address smartAccount => SignerConf conf)
+        ) storage $sessionValidators,
         PermissionId permissionId,
         address smartAccount
     )
@@ -273,7 +271,7 @@ library ConfigLib {
         // Get the storage reference for the signer configuration
         SignerConf storage $conf = $sessionValidators[permissionId][smartAccount];
 
-        //emit event
+        // emit event
         emit ISmartSession.SessionValidatorDisabled(permissionId, address($conf.sessionValidator), smartAccount);
 
         // Clear the session validator
@@ -307,11 +305,7 @@ library ConfigLib {
         }
     }
 
-    function removeAll(
-        EnumerableERC7739Config storage $enabledERC7739,
-        PermissionId permissionId,
-        address smartAccount
-    )
+    function removeAll(EnumerableERC7739Config storage $enabledERC7739, PermissionId permissionId, address smartAccount)
         internal
     {
         bytes32[] memory domainSeparators = $enabledERC7739.enabledDomainSeparators[permissionId].values(smartAccount);

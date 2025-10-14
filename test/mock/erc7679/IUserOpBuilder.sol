@@ -28,16 +28,12 @@ interface IUserOperationBuilder {
      * the executions.
      * @param smartAccount is the address of the UserOp sender.
      * @param executions are (destination, value, callData) tuples that
-     * the UserOp wants to execute.  It's an array so the UserOp can
+     * the UserOp wants to execute. It's an array so the UserOp can
      * batch executions.
      * @param context is the data required for the UserOp builder to
      * properly compute the requested field for the UserOp.
      */
-    function getCallData(
-        address smartAccount,
-        Execution[] calldata executions,
-        bytes calldata context
-    )
+    function getCallData(address smartAccount, Execution[] calldata executions, bytes calldata context)
         external
         view
         returns (bytes memory);
@@ -46,17 +42,13 @@ interface IUserOperationBuilder {
      * @dev Returns a correctly encoded signature, given a UserOp that
      * has been correctly filled out except for the signature field.
      * @param smartAccount is the address of the UserOp sender.
-     * @param userOperation is the UserOp.  Every field of the UserOp should
-     * be valid except for the signature field.  The "PackedUserOperation"
+     * @param userOperation is the UserOp. Every field of the UserOp should
+     * be valid except for the signature field. The "PackedUserOperation"
      * struct is as defined in ERC-4337.
      * @param context is the data required for the UserOp builder to
      * properly compute the requested field for the UserOp.
      */
-    function formatSignature(
-        address smartAccount,
-        PackedUserOperation calldata userOperation,
-        bytes calldata context
-    )
+    function formatSignature(address smartAccount, PackedUserOperation calldata userOperation, bytes calldata context)
         external
         view
         returns (bytes memory signature);

@@ -7,11 +7,7 @@ import { ISessionValidator } from "contracts/interfaces/ISessionValidator.sol";
 import { ECDSA } from "solady/utils/ECDSA.sol";
 
 contract SimpleSessionValidator is ISessionValidator {
-    function validateSignatureWithData(
-        bytes32 hash,
-        bytes calldata sig,
-        bytes calldata data
-    )
+    function validateSignatureWithData(bytes32 hash, bytes calldata sig, bytes calldata data)
         external
         view
         returns (bool validSig)

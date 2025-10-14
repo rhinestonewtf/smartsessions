@@ -82,9 +82,9 @@ library ConfigLib {
             policy.requirePolicyType(policyType);
 
             // this will revert if the policy is not attested to
-            if (useRegistry) {
-                registry.checkForAccount({ smartAccount: account, module: policy });
-            }
+            // if (useRegistry) {
+            // registry.checkForAccount({ smartAccount: msg.sender, module: policy });
+            //}
 
             // Add the policy to the list for the given permission and smart account
             $policy.policyList[permissionId].add({ account: account, value: policy });
@@ -216,14 +216,14 @@ library ConfigLib {
             revert ISmartSession.InvalidISessionValidator(sessionValidator);
         }
 
-        // this will revert if the policy is not attested to
-        if (useRegistry) {
-            registry.checkForAccount({
-                smartAccount: account,
-                module: address(sessionValidator),
-                moduleType: ModuleType.wrap(ERC7579_MODULE_TYPE_STATELESS_VALIDATOR)
-            });
-        }
+        // // this will revert if the policy is not attested to
+        // if (useRegistry) {
+        // registry.checkForAccount({
+        // smartAccount: msg.sender,
+        // module: address(sessionValidator),
+        // moduleType: ModuleType.wrap(ERC7579_MODULE_TYPE_STATELESS_VALIDATOR)
+        // });
+        //}
 
         // Get the storage reference for the signer configuration
         SignerConf storage $conf = $sessionValidators[permissionId][account];

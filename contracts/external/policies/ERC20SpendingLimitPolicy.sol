@@ -34,8 +34,8 @@ contract ERC20SpendingLimitPolicy is IActionPolicy {
     mapping(
         ConfigId id
             => mapping(
-                address mulitplexer => mapping(address token => mapping(address userOpSender => TokenPolicyData))
-            )
+            address mulitplexer => mapping(address token => mapping(address userOpSender => TokenPolicyData))
+        )
     ) internal $policyData;
 
     /**
@@ -91,13 +91,7 @@ contract ERC20SpendingLimitPolicy is IActionPolicy {
      * @param callData The call data.
      * @return The validation result.
      */
-    function checkAction(
-        ConfigId id,
-        address account,
-        address target,
-        uint256 value,
-        bytes calldata callData
-    )
+    function checkAction(ConfigId id, address account, address target, uint256 value, bytes calldata callData)
         external
         override
         returns (uint256)
@@ -110,9 +104,7 @@ contract ERC20SpendingLimitPolicy is IActionPolicy {
 
         // Use a struct here to avoid stack too deep :)
         TokenPolicyData memory newData = TokenPolicyData({
-            alreadySpent: $.alreadySpent,
-            approvedAmount: $.approvedAmount,
-            spendingLimit: $.spendingLimit
+            alreadySpent: $.alreadySpent, approvedAmount: $.approvedAmount, spendingLimit: $.spendingLimit
         });
 
         uint256 totalSpentAndApproved;
@@ -170,12 +162,7 @@ contract ERC20SpendingLimitPolicy is IActionPolicy {
      * @return alreadySpent The already spent amount.
      * @return approvedAmount The approved amount.
      */
-    function getPolicyData(
-        ConfigId id,
-        address multiplexer,
-        address token,
-        address userOpSender
-    )
+    function getPolicyData(ConfigId id, address multiplexer, address token, address userOpSender)
         external
         view
         returns (uint256 spendingLimit, uint256 alreadySpent, uint256 approvedAmount)
@@ -194,10 +181,8 @@ contract ERC20SpendingLimitPolicy is IActionPolicy {
      * @return True if the interface is supported, false otherwise.
      */
     function supportsInterface(bytes4 interfaceID) external pure override returns (bool) {
-        return (
-            interfaceID == type(IERC165).interfaceId || interfaceID == type(IPolicy).interfaceId
-                || interfaceID == type(IActionPolicy).interfaceId
-        );
+        return (interfaceID == type(IERC165).interfaceId || interfaceID == type(IPolicy).interfaceId
+                || interfaceID == type(IActionPolicy).interfaceId);
     }
 
     /**
@@ -207,14 +192,7 @@ contract ERC20SpendingLimitPolicy is IActionPolicy {
      * @dev we do not check if the transfer is from self to self, as this should not be allowed by token itself
      * returns bool => isTransfer, amount spent
      */
-    function _isTokenTransferOrApprove(
-        address account,
-        bytes calldata callData
-    )
-        internal
-        pure
-        returns (bool, uint256)
-    {
+    function _isTokenTransferOrApprove(address account, bytes calldata callData) internal pure returns (bool, uint256) {
         bytes4 functionSelector = bytes4(callData[0:4]);
 
         if (functionSelector == IERC20.approve.selector) {
@@ -245,11 +223,7 @@ contract ERC20SpendingLimitPolicy is IActionPolicy {
         return (false, 0);
     }
 
-    function _getPolicy(
-        ConfigId id,
-        address userOpSender,
-        address token
-    )
+    function _getPolicy(ConfigId id, address userOpSender, address token)
         internal
         view
         returns (TokenPolicyData storage s)

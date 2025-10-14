@@ -24,9 +24,9 @@ contract DeploySmartSession is Script {
 
         vm.startBroadcast(privKey);
 
-        //_deploySmartSession();
-        //_deployUOBuilder();
-        //_deploySubModules();
+        // _deploySmartSession();
+        // _deployUOBuilder();
+        // _deploySubModules();
         _deployValidators();
 
         vm.stopBroadcast();

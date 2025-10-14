@@ -27,9 +27,7 @@ library SignerLib {
         // check signature of ISessionValidator first.
         // policies only need to be processed if the signature is correct
         return sessionValidator.validateSignatureWithData({
-            hash: hash,
-            sig: signature,
-            data: $sessionValidators[permissionId][account].config.load()
+            hash: hash, sig: signature, data: $sessionValidators[permissionId][account].config.load()
         });
     }
 }

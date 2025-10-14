@@ -63,13 +63,7 @@ contract ValueLimitPolicy is IActionPolicy, IUserOpPolicy {
      * @param value The value.
      * @return The validation result.
      */
-    function checkAction(
-        ConfigId id,
-        address account,
-        address,
-        uint256 value,
-        bytes calldata
-    )
+    function checkAction(ConfigId id, address account, address, uint256 value, bytes calldata)
         external
         returns (uint256)
     {
@@ -126,15 +120,7 @@ contract ValueLimitPolicy is IActionPolicy, IUserOpPolicy {
      * @param userOpSender The user operation sender.
      * @return The value limit.
      */
-    function getValueLimit(
-        ConfigId configId,
-        address msgSender,
-        address userOpSender
-    )
-        external
-        view
-        returns (uint256)
-    {
+    function getValueLimit(ConfigId configId, address msgSender, address userOpSender) external view returns (uint256) {
         return valueLimitConfigs[configId][msgSender][userOpSender].valueLimit;
     }
 

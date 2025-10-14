@@ -55,7 +55,7 @@ contract UsageLimitPolicyTest is PolicyTestBase {
         public
         returns (PermissionId)
     {
-        //re-initialize
+        // re-initialize
         PermissionId permissionIdReInited =
             _enableUserOpSession(address(usageLimitPolicy), abi.encodePacked(uint128(1)), instance, keccak256("salt"));
         // use

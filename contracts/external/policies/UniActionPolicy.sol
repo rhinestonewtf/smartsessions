@@ -71,13 +71,7 @@ contract UniActionPolicy is IActionPolicy {
     /**
      * @dev Checks if the action is allowed based on the args rules defined in the policy.
      */
-    function checkAction(
-        ConfigId id,
-        address account,
-        address,
-        uint256 value,
-        bytes calldata data
-    )
+    function checkAction(ConfigId id, address account, address, uint256 value, bytes calldata data)
         external
         returns (uint256)
     {
@@ -110,10 +104,8 @@ contract UniActionPolicy is IActionPolicy {
     }
 
     function supportsInterface(bytes4 interfaceID) external pure override returns (bool) {
-        return (
-            interfaceID == type(IERC165).interfaceId || interfaceID == type(IPolicy).interfaceId
-                || interfaceID == type(IActionPolicy).interfaceId
-        );
+        return (interfaceID == type(IERC165).interfaceId || interfaceID == type(IPolicy).interfaceId
+                || interfaceID == type(IActionPolicy).interfaceId);
     }
 }
 

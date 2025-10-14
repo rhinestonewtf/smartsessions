@@ -18,7 +18,8 @@ library ExecutionLib {
     {
         assembly {
             if lt(userOpCallData.length, 68) { revert(0, 0) }
-            let baseOffset := add(userOpCallData.offset, 0x24) //skip 4 bytes of selector and 32 bytes of execution mode
+            let baseOffset := add(userOpCallData.offset, 0x24) // skip 4 bytes of selector and 32 bytes of execution
+                // mode
             let calldataLoadOffset := calldataload(baseOffset)
             // check for potential overflow in calldataLoadOffset
             if gt(calldataLoadOffset, 0xffffffffffffffff) { revert(0, 0) }
@@ -58,11 +59,7 @@ library ExecutionLib {
      * https://github.com/Vectorized/solady/blob/740812cedc9a1fc11e17cb3d4569744367dedf19/src/accounts/LibERC7579.sol#L146
      *      Credits to Vectorized and the Solady Team
      */
-    function decodeBatch(bytes calldata executionCalldata)
-        internal
-        pure
-        returns (Execution[] calldata executionBatch)
-    {
+    function decodeBatch(bytes calldata executionCalldata) internal pure returns (Execution[] calldata executionBatch) {
         /// @solidity memory-safe-assembly
         assembly {
             let u := calldataload(executionCalldata.offset)
@@ -109,11 +106,7 @@ library ExecutionLib {
         callData = executionCalldata[52:];
     }
 
-    function encodeSingle(
-        address target,
-        uint256 value,
-        bytes memory callData
-    )
+    function encodeSingle(address target, uint256 value, bytes memory callData)
         internal
         pure
         returns (bytes memory userOpCalldata)

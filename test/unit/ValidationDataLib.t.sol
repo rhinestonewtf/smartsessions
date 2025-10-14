@@ -12,14 +12,7 @@ contract ValidationDataLibTest is Test {
         // Setup is empty as we're using fresh state for each test
     }
 
-    function test_intersect(
-        uint48 validAfter_a,
-        uint48 validAfter_b,
-        uint48 validUntil_a,
-        uint48 validUntil_b
-    )
-        public
-    {
+    function test_intersect(uint48 validAfter_a, uint48 validAfter_b, uint48 validUntil_a, uint48 validUntil_b) public {
         vm.assume(validAfter_a != 0);
         vm.assume(validAfter_b != 0);
         vm.assume(validUntil_a != 0);

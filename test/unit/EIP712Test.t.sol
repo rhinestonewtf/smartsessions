@@ -10,16 +10,11 @@ contract Helper {
 
     function hash(Session memory session) public returns (bytes32 hash) {
         hash = session.sessionDigest({
-            account: address(0x6605F8785E09a245DD558e55F9A0f4A508434503),
-            mode: SmartSessionMode.ENABLE,
-            nonce: 0
+            account: address(0x6605F8785E09a245DD558e55F9A0f4A508434503), mode: SmartSessionMode.ENABLE, nonce: 0
         });
     }
 
-    function hashPermission(
-        Session memory session,
-        bool ignoreSecurityAttestations
-    )
+    function hashPermission(Session memory session, bool ignoreSecurityAttestations)
         public
         pure
         returns (bytes32 hash)
@@ -43,35 +38,35 @@ contract EIP712Test is Test {
     }
 
     // function test_type_notation() public {
-    //     // test multichain hash
-    //     string memory expectedMultiChainSessionTypeHash =
-    //         "MultiChainSessionEIP712(ChainSessionEIP712[] sessionsAndChainIds)ActionData(bytes4
+    // // test multichain hash
+    // string memory expectedMultiChainSessionTypeHash =
+    // "MultiChainSessionEIP712(ChainSessionEIP712[] sessionsAndChainIds)ActionData(bytes4
     // actionTargetSelector,address actionTarget,PolicyData[] actionPolicies)ChainSessionEIP712(uint64
     // chainId,SessionEIP712 session)ERC7739Data(string[] allowedERC7739Content,PolicyData[]
     // erc1271Policies)PolicyData(address policy,bytes initData)SessionEIP712(address account,address smartSession,uint8
     // mode,address sessionValidator,bytes32 salt,bytes sessionValidatorInitData,PolicyData[] userOpPolicies,ERC7739Data
     // erc7739Policies,ActionData[] actions,uint256 nonce)";
-    //     bytes32 hash = keccak256(abi.encodePacked(expectedMultiChainSessionTypeHash));
-    //     assertEq(hash, MULTICHAIN_SESSION_TYPEHASH);
+    // bytes32 hash = keccak256(abi.encodePacked(expectedMultiChainSessionTypeHash));
+    // assertEq(hash, MULTICHAIN_SESSION_TYPEHASH);
     //
-    //     string memory expectedChainSession =
-    //         "ChainSessionEIP712(uint64 chainId,SessionEIP712 session)ActionData(bytes4 actionTargetSelector,address
+    // string memory expectedChainSession =
+    // "ChainSessionEIP712(uint64 chainId,SessionEIP712 session)ActionData(bytes4 actionTargetSelector,address
     // actionTarget,PolicyData[] actionPolicies)ERC7739Data(string[] allowedERC7739Content,PolicyData[]
     // erc1271Policies)PolicyData(address policy,bytes initData)SessionEIP712(address account,address smartSession,uint8
     // mode,address sessionValidator,bytes32 salt,bytes sessionValidatorInitData,PolicyData[] userOpPolicies,ERC7739Data
     // erc7739Policies,ActionData[] actions,uint256 nonce)";
-    //     hash = keccak256(abi.encodePacked(expectedChainSession));
-    //     assertEq(hash, CHAIN_SESSION_TYPEHASH);
+    // hash = keccak256(abi.encodePacked(expectedChainSession));
+    // assertEq(hash, CHAIN_SESSION_TYPEHASH);
     //
-    //     string memory expectedSession =
-    //         "SessionEIP712(address account,address smartSession,uint8 mode,address sessionValidator,bytes32
+    // string memory expectedSession =
+    // "SessionEIP712(address account,address smartSession,uint8 mode,address sessionValidator,bytes32
     // salt,bytes sessionValidatorInitData,PolicyData[] userOpPolicies,ERC7739Data erc7739Policies,ActionData[]
     // actions,uint256 nonce)ActionData(bytes4 actionTargetSelector,address actionTarget,PolicyData[]
     // actionPolicies)ERC7739Data(string[] allowedERC7739Content,PolicyData[] erc1271Policies)PolicyData(address
     // policy,bytes initData)";
-    //     hash = keccak256(abi.encodePacked(expectedSession));
-    //     assertEq(hash, SESSION_TYPEHASH);
-    // }
+    // hash = keccak256(abi.encodePacked(expectedSession));
+    // assertEq(hash, SESSION_TYPEHASH);
+    //}
 
     function test_policy_hash() public {
         bytes32 expected_typehash = 0xdddac12cd8b10a071bea04226e97ac9490698394e19224abc47a5cfeeeb6ee97;
@@ -172,10 +167,7 @@ contract EIP712Test is Test {
         assertEq(hash, expectedSessionHash, "hash fn borked");
     }
 
-    function _getEmptyERC7739Data(
-        string memory content,
-        PolicyData[] memory erc1271Policies
-    )
+    function _getEmptyERC7739Data(string memory content, PolicyData[] memory erc1271Policies)
         internal
         returns (ERC7739Data memory)
     {

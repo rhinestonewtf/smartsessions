@@ -40,10 +40,7 @@ contract SessionManagementTest is BaseTest {
         bytes memory callData = abi.encodeCall(MockTarget.setValue, (1337));
 
         UserOpData memory userOpData = instance.getExecOps({
-            target: _target,
-            value: value,
-            callData: callData,
-            txValidator: address(smartSession)
+            target: _target, value: value, callData: callData, txValidator: address(smartSession)
         });
 
         Session memory session = Session({
@@ -124,10 +121,7 @@ contract SessionManagementTest is BaseTest {
 
         // get userOp from ModuleKit
         UserOpData memory userOpData = instance.getExecOps({
-            target: _target,
-            value: value,
-            callData: callData,
-            txValidator: address(smartSession)
+            target: _target, value: value, callData: callData, txValidator: address(smartSession)
         });
         // session key signs the userOP NOTE: this is using encodeUse() since the session is already enabled
         userOpData.userOp.signature = EncodeLib.encodeUse({ permissionId: permissionId, sig: hex"4141414141" });
@@ -213,10 +207,7 @@ contract SessionManagementTest is BaseTest {
         bytes memory callData = abi.encodeCall(MockTarget.setValue, (1337));
 
         UserOpData memory userOpData = instance.getExecOps({
-            target: _target,
-            value: value,
-            callData: callData,
-            txValidator: address(smartSession)
+            target: _target, value: value, callData: callData, txValidator: address(smartSession)
         });
 
         Session memory session = Session({
@@ -283,10 +274,7 @@ contract SessionManagementTest is BaseTest {
         smartSession.enableSessions(enableSessionsArray);
 
         UserOpData memory userOpData = instance.getExecOps({
-            target: _target,
-            value: value,
-            callData: callData,
-            txValidator: address(smartSession)
+            target: _target, value: value, callData: callData, txValidator: address(smartSession)
         });
 
         userOpData.userOp.signature =
@@ -295,25 +283,19 @@ contract SessionManagementTest is BaseTest {
         uint256 now = block.timestamp;
         policy1.setValidationData(
             _packValidationData({
-                sigFailed: false,
-                validAfter: uint48(now - 1),
-                validUntil: uint48(type(uint48).max - 1)
+                sigFailed: false, validAfter: uint48(now - 1), validUntil: uint48(type(uint48).max - 1)
             })
         );
 
         policy2.setValidationData(
             _packValidationData({
-                sigFailed: false,
-                validAfter: uint48(now + 101),
-                validUntil: uint48(type(uint48).max - 3)
+                sigFailed: false, validAfter: uint48(now + 101), validUntil: uint48(type(uint48).max - 3)
             })
         );
 
         policy3.setValidationData(
             _packValidationData({
-                sigFailed: false,
-                validAfter: uint48(now + 100),
-                validUntil: uint48(type(uint48).max - 1)
+                sigFailed: false, validAfter: uint48(now + 100), validUntil: uint48(type(uint48).max - 1)
             })
         );
 

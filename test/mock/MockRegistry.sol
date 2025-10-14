@@ -4,9 +4,9 @@ pragma solidity ^0.8.23;
 import { ModuleType, IRegistry } from "contracts/interfaces/IRegistry.sol";
 
 contract MockRegistry is IRegistry {
-    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-    /*          Check with Registry internal attesters            */
-    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+    /* ´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /* Check with Registry internal attesters */
+    /* .•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     function check(address module) external view {
         if (module == address(0x420)) {
             revert();
@@ -31,9 +31,9 @@ contract MockRegistry is IRegistry {
         }
     }
 
-    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-    /*              Check with external attester(s)               */
-    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+    /* ´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /* Check with external attester(s) */
+    /* .•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     function check(address module, address[] calldata attesters, uint256 threshold) external view {
         if (module == address(0x420)) {
@@ -41,12 +41,7 @@ contract MockRegistry is IRegistry {
         }
     }
 
-    function check(
-        address module,
-        ModuleType moduleType,
-        address[] calldata attesters,
-        uint256 threshold
-    )
+    function check(address module, ModuleType moduleType, address[] calldata attesters, uint256 threshold)
         external
         view
     {

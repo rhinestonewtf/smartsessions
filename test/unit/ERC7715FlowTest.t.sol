@@ -49,8 +49,8 @@ contract ERC7715FlowTest is BaseTest {
 
         uint192 nonceKey = uint192(uint160(address(smartSession))) << 32;
         bytes memory context = IntegrationEncodeLib.encodeContext(
-            nonceKey, //192 bits, 24 bytes
-            ModeLib.encodeSimpleSingle(), //execution mode, 32 bytes
+            nonceKey, // 192 bits, 24 bytes
+            ModeLib.encodeSimpleSingle(), // execution mode, 32 bytes
             permissionId,
             enableSessions
         );

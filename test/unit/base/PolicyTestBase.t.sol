@@ -21,12 +21,7 @@ contract PolicyTestBase is ERC1271TestBase {
         _value = 0;
     }
 
-    function _enableUserOpSession(
-        address policy,
-        bytes memory initData,
-        AccountInstance memory instance,
-        bytes32 salt
-    )
+    function _enableUserOpSession(address policy, bytes memory initData, AccountInstance memory instance, bytes32 salt)
         internal
         returns (PermissionId permissionId)
     {
@@ -61,12 +56,7 @@ contract PolicyTestBase is ERC1271TestBase {
         permissionId = smartSession.getPermissionId(session);
     }
 
-    function _enableActionSession(
-        address policy,
-        bytes memory initData,
-        AccountInstance memory instance,
-        bytes32 salt
-    )
+    function _enableActionSession(address policy, bytes memory initData, AccountInstance memory instance, bytes32 salt)
         internal
         returns (PermissionId permissionId)
     {
@@ -75,9 +65,7 @@ contract PolicyTestBase is ERC1271TestBase {
 
         ActionData[] memory actionDatas = new ActionData[](1);
         actionDatas[0] = ActionData({
-            actionTarget: _target,
-            actionTargetSelector: target.setValue.selector,
-            actionPolicies: policyDatas
+            actionTarget: _target, actionTargetSelector: target.setValue.selector, actionPolicies: policyDatas
         });
 
         Session memory session = Session({
@@ -160,9 +148,7 @@ contract PolicyTestBase is ERC1271TestBase {
         });
 
         actionDatas[1] = ActionData({
-            actionTarget: _target,
-            actionTargetSelector: target.setValue.selector,
-            actionPolicies: policyDatas2
+            actionTarget: _target, actionTargetSelector: target.setValue.selector, actionPolicies: policyDatas2
         });
 
         Session memory session = Session({
@@ -183,12 +169,7 @@ contract PolicyTestBase is ERC1271TestBase {
         permissionId = smartSession.getPermissionId(session);
     }
 
-    function _enable1271Session(
-        address policy,
-        bytes memory initData,
-        AccountInstance memory instance,
-        bytes32 salt
-    )
+    function _enable1271Session(address policy, bytes memory initData, AccountInstance memory instance, bytes32 salt)
         internal
         returns (PermissionId permissionId)
     {

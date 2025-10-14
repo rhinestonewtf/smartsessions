@@ -17,10 +17,11 @@ contract SimpleGasPolicyTest is PolicyTestBase {
     function setUp() public virtual override {
         super.setUp();
         // Initialize with both gasLimit (1M gas) and costLimit (0.1 ETH)
-        simpleGasPolicyInitData = abi.encodePacked(
-            uint128(1_000_000), // gasLimit: 1M gas units
-            uint128(0.1 ether) // costLimit: 0.1 ETH
-        );
+        simpleGasPolicyInitData =
+            abi.encodePacked(
+                uint128(1_000_000), // gasLimit: 1M gas units
+                uint128(0.1 ether) // costLimit: 0.1 ETH
+            );
         vm.deal(instance.account, 1e21);
     }
 
@@ -56,11 +57,8 @@ contract SimpleGasPolicyTest is PolicyTestBase {
         return invalidPermissionId;
     }
 
-    function use_simple_gas_policy_as_UserOp_policy_success_and_fails_if_exceeds_limit()
-        public
-        returns (PermissionId)
-    {
-        //re-initialize
+    function use_simple_gas_policy_as_UserOp_policy_success_and_fails_if_exceeds_limit() public returns (PermissionId) {
+        // re-initialize
         PermissionId permissionIdReInited =
             _enableUserOpSession(address(simpleGasPolicy), simpleGasPolicyInitData, instance, keccak256("salt"));
         // use

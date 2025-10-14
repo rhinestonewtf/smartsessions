@@ -30,7 +30,9 @@ contract SmartSessionERC1271Test is ERC1271TestBase {
             salt: keccak256("salt"),
             sessionValidatorInitData: abi.encodePacked(sessionSigner1.addr),
             userOpPolicies: _getEmptyPolicyDatas(address(yesPolicy)),
-            erc7739Policies: _getEmptyERC7739Data("Permit(bytes32 stuff)Permit", _getEmptyPolicyDatas(address(yesPolicy))),
+            erc7739Policies: _getEmptyERC7739Data(
+                "Permit(bytes32 stuff)Permit", _getEmptyPolicyDatas(address(yesPolicy))
+            ),
             actions: new ActionData[](0),
             permitERC4337Paymaster: true
         });

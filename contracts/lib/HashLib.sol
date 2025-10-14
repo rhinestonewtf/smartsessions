@@ -5,8 +5,8 @@ import "../DataTypes.sol";
 import { EfficientHashLib } from "solady/utils/EfficientHashLib.sol";
 import { MessageHashUtils } from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
-///////  Custom EIP712 types  ////
-//  to keep the documentation of nested EIP712 hashes readable, we trunkated the EIP712 definitions of nested structs.
+// ///// Custom EIP712 types ////
+// to keep the documentation of nested EIP712 hashes readable, we trunkated the EIP712 definitions of nested structs.
 // If you want to reproduce the hashes, you can use the following alloy helper tool:
 // https://github.com/erc7579/smartsessions/blob/main/rust/main.rs
 // run cargo run to get the type hashes
@@ -29,7 +29,7 @@ bytes32 constant ERC7739_DATA_TYPEHASH = 0xdfd9b5718eebaa2484740b4ea6939e9618902
  *     SignedPermissions permissions,                    // Signed permissions struct
  *     │   bool  permitGenericPolicy,                    // Allow policy fallback
  *     │   bool  permitAdminAccess,                      // Allow unsafe fallback (the action policy is permitted to
- *     │                                                 //   call administrative functions of smart session module). 
+ *     │                                                 //   call administrative functions of smart session module).
  *     │                                                 //   @dev frontends must be handled with great care, as this
  *     │                                                 //   can be used for priviledge escalation
  *     │   bool ignoreSecurityAttestations               // Ignore Registry / Security Attestations
@@ -73,7 +73,7 @@ bytes32 constant _MULTICHAIN_DOMAIN_TYPEHASH = 0xb03948446334eb9b2196d5eb166f69b
 // One should use the domain separator below where possible
 // or provide the following EIP712Domain struct to the signTypedData() function
 // { Name: "SmartSession" (string),
-//   Version: "1" (string) }
+// Version: "1" (string) }
 // Name and version are consistent with what is returned by _domainNameAndVersion()
 // Empty fields: version, chainId, verifyingContract are omitted as per EIP-712
 // it is introduced for compatibility with signTypedData()
@@ -142,12 +142,7 @@ library HashLib {
      * Hashes the data from the Session struct with some security critical data
      * such as nonce, account address, smart session address, and mode
      */
-    function sessionDigest(
-        Session memory session,
-        address account,
-        SmartSessionMode mode,
-        uint256 nonce
-    )
+    function sessionDigest(Session memory session, address account, SmartSessionMode mode, uint256 nonce)
         internal
         view
         returns (bytes32)
@@ -182,8 +177,7 @@ library HashLib {
                     SESSION_TYPEHASH,
                     account,
                     hashPermissions({
-                        session: session,
-                        ignoreSecurityAttestations: mode == SmartSessionMode.UNSAFE_ENABLE
+                        session: session, ignoreSecurityAttestations: mode == SmartSessionMode.UNSAFE_ENABLE
                     }),
                     address(session.sessionValidator),
                     keccak256(session.sessionValidatorInitData),
@@ -303,12 +297,7 @@ library HashLib {
         return keccak256(bytes(content));
     }
 
-    function getAndVerifyDigest(
-        EnableSession memory enableData,
-        address account,
-        uint256 nonce,
-        SmartSessionMode mode
-    )
+    function getAndVerifyDigest(EnableSession memory enableData, address account, uint256 nonce, SmartSessionMode mode)
         internal
         view
         returns (bytes32 digest)

@@ -24,13 +24,7 @@ contract ContractWhitelistPolicy is IPolicy, IActionPolicy {
      * @param id The config ID.
      * @param account The account.
      */
-    function checkAction(
-        ConfigId id,
-        address account,
-        address target,
-        uint256,
-        bytes calldata
-    )
+    function checkAction(ConfigId id, address account, address target, uint256, bytes calldata)
         external
         view
         returns (uint256)
@@ -74,12 +68,7 @@ contract ContractWhitelistPolicy is IPolicy, IActionPolicy {
      * @param smartAccount The smart account.
      * @return The array of whitelisted targets.
      */
-    function isContractWhitelisted(
-        ConfigId id,
-        address multiplexer,
-        address smartAccount,
-        address target
-    )
+    function isContractWhitelisted(ConfigId id, address multiplexer, address smartAccount, address target)
         external
         view
         returns (bool)
@@ -93,9 +82,7 @@ contract ContractWhitelistPolicy is IPolicy, IActionPolicy {
      * @return True if the interface is supported, false otherwise.
      */
     function supportsInterface(bytes4 interfaceID) external pure override returns (bool) {
-        return (
-            interfaceID == type(IERC165).interfaceId || interfaceID == type(IPolicy).interfaceId
-                || interfaceID == type(IActionPolicy).interfaceId
-        );
+        return (interfaceID == type(IERC165).interfaceId || interfaceID == type(IPolicy).interfaceId
+                || interfaceID == type(IActionPolicy).interfaceId);
     }
 }

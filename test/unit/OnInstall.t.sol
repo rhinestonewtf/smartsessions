@@ -12,9 +12,7 @@ contract OnInstallTest is BaseTest {
         newInstance = makeAccountInstance("testAccount");
 
         newInstance.installModule({
-            moduleTypeId: MODULE_TYPE_VALIDATOR,
-            module: address(mockK1),
-            data: abi.encodePacked(owner.addr)
+            moduleTypeId: MODULE_TYPE_VALIDATOR, module: address(mockK1), data: abi.encodePacked(owner.addr)
         });
     }
 

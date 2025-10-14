@@ -12,7 +12,7 @@ import { ArgPolicyTreeLib } from "./lib/ArgPolicyTreeLib.sol";
 // Types
 import { ConfigId, ActionData, PolicyData, PermissionId } from "../../../DataTypes.sol";
 
-/*//////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////
                             STRUCTS
 //////////////////////////////////////////////////////////////*/
 
@@ -60,7 +60,7 @@ struct LimitUsage {
     uint256 used;
 }
 
-/*//////////////////////////////////////////////////////////////
+/* //////////////////////////////////////////////////////////////
                             ENUMS
 /////////////////////////////////////////////////////////////*/
 
@@ -74,7 +74,6 @@ enum ParamCondition {
     LESS_THAN_OR_EQUAL, // Parameter <= ref
     NOT_EQUAL, // Parameter != ref
     IN_RANGE // ref is packed min/max, Parameter is within range
-
 }
 
 /**
@@ -93,21 +92,21 @@ enum ParamCondition {
  * (equality, ranges, thresholds) and can also enforce usage limits on arguments.
  */
 contract ArgPolicy is IActionPolicy {
-    /*//////////////////////////////////////////////////////////////
+    /* //////////////////////////////////////////////////////////////
                                LIBRARIES
     //////////////////////////////////////////////////////////////*/
 
     using SubModuleLib for bytes;
     using ArgPolicyTreeLib for *;
 
-    /*//////////////////////////////////////////////////////////////
+    /* //////////////////////////////////////////////////////////////
                                  ERRORS
     //////////////////////////////////////////////////////////////*/
 
     /// @notice Error thrown when a value exceeds the allowed limit
     error ValueLimitExceeded(ConfigId id, uint256 value, uint256 limit);
 
-    /*//////////////////////////////////////////////////////////////
+    /* //////////////////////////////////////////////////////////////
                                  STATE
     //////////////////////////////////////////////////////////////*/
 
@@ -125,13 +124,7 @@ contract ArgPolicy is IActionPolicy {
      * @param data The calldata of the action
      * @return Validation result code (VALIDATION_SUCCESS or VALIDATION_FAILED)
      */
-    function checkAction(
-        ConfigId id,
-        address account,
-        address,
-        uint256 value,
-        bytes calldata data
-    )
+    function checkAction(ConfigId id, address account, address, uint256 value, bytes calldata data)
         external
         returns (uint256)
     {
@@ -189,9 +182,7 @@ contract ArgPolicy is IActionPolicy {
      * @return True if supported, false otherwise
      */
     function supportsInterface(bytes4 interfaceID) external pure override returns (bool) {
-        return (
-            interfaceID == type(IERC165).interfaceId || interfaceID == type(IPolicy).interfaceId
-                || interfaceID == type(IActionPolicy).interfaceId
-        );
+        return (interfaceID == type(IERC165).interfaceId || interfaceID == type(IPolicy).interfaceId
+                || interfaceID == type(IActionPolicy).interfaceId);
     }
 }

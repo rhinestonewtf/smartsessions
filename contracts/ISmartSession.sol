@@ -64,9 +64,9 @@ interface ISmartSession {
 
     event PermissionIdPermit4337Paymaster(PermissionId permissionId, address smartAccount, bool enabled);
 
-    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-    /*                           ERC7579                          */
-    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+    /* ´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /* ERC7579 */
+    /* .•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     /**
      * ERC4337/ERC7579 validation function
@@ -80,12 +80,7 @@ interface ISmartSession {
      *     EnableSession data, which is packed in userOp.signature is parsed, and stored in the SmartSession storage.
      *
      */
-    function validateUserOp(
-        PackedUserOperation memory userOp,
-        bytes32 userOpHash
-    )
-        external
-        returns (ValidationData vd);
+    function validateUserOp(PackedUserOperation memory userOp, bytes32 userOpHash) external returns (ValidationData vd);
     /**
      * ERC7579 compliant onInstall function.
      * expected to abi.encode(Session[]) for the enable data
@@ -104,20 +99,16 @@ interface ISmartSession {
      * ERC7579 compliant ERC1271 function
      * this function allows session keys to sign ERC1271 requests.
      */
-    function isValidSignatureWithSender(
-        address sender,
-        bytes32 hash,
-        bytes memory signature
-    )
+    function isValidSignatureWithSender(address sender, bytes32 hash, bytes memory signature)
         external
         view
         returns (bytes4 result);
 
     function isInitialized(address smartAccount) external view returns (bool);
     function isModuleType(uint256 typeID) external pure returns (bool);
-    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-    /*                      Manage Sessions                       */
-    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+    /* ´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /* Manage Sessions */
+    /* .•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     function enableActionPolicies(PermissionId permissionId, ActionData[] memory actionPolicies) external;
     function enableERC1271Policies(PermissionId permissionId, ERC7739Data calldata erc1271Policies) external;
     function enableSessions(Session[] memory sessions) external returns (PermissionId[] memory permissionIds);
@@ -134,16 +125,11 @@ interface ISmartSession {
     function removeSession(PermissionId permissionId) external;
     function revokeEnableSignature(PermissionId permissionId) external;
 
-    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-    /*                      View Functions                        */
-    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+    /* ´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /* View Functions */
+    /* .•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    function getSessionDigest(
-        PermissionId permissionId,
-        address account,
-        Session memory data,
-        SmartSessionMode mode
-    )
+    function getSessionDigest(PermissionId permissionId, address account, Session memory data, SmartSessionMode mode)
         external
         view
         returns (bytes32);

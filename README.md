@@ -51,3 +51,5 @@ This software is in beta and should be used at your own risk. The authors are no
 
 Filipp Makarov (Biconomy)
 zeroknots.eth (Rhinestone)
+
+Maintained by [Rhinestone](https://www.rhinestone.dev), co-author of ERC-7579.
